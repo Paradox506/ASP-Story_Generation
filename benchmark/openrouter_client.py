@@ -35,6 +35,7 @@ class OpenRouterClient:
             "messages": [{"role": "user", "content": prompt}],
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
+            "stream": False,
         }
         start = time.time()
         try:
@@ -42,14 +43,20 @@ class OpenRouterClient:
             resp.raise_for_status()
             data = resp.json()
             elapsed = time.time() - start
-            content = data["choices"][0]["message"]["content"]
+            content = ""
             usage = data.get("usage", {})
+            try:
+                content = data["choices"][0]["message"]["content"]
+            except Exception:
+                # fallback: store full response text for debugging
+                content = resp.text
             return {
                 "success": True,
                 "content": content,
                 "completion_tokens": usage.get("completion_tokens"),
                 "prompt_tokens": usage.get("prompt_tokens"),
                 "elapsed": elapsed,
+                "raw_response": data,
             }
         except Exception as e:
             # Capture response text if available for debugging
@@ -60,4 +67,4 @@ class OpenRouterClient:
                     err_text = resp.text
                 except Exception:
                     err_text = ""
-            return {"success": False, "error": str(e), "elapsed": time.time() - start}
+            return {"success": False, "error": str(e), "elapsed": elapsed, "content": err_text}
