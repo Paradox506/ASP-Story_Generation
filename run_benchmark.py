@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 import json
+from typing import List, Dict, Any
 
 from benchmark.experiment_runner import ExperimentRunner
 from benchmark.config import load_config
@@ -18,6 +19,8 @@ def main():
     parser.add_argument("--response-file", help="Use pre-saved LLM response instead of calling API")
     parser.add_argument("--output", help="Where to write JSON result")
     parser.add_argument("--output-dir", help="Base directory to store run artifacts")
+    parser.add_argument("--runs", type=int, help="Runs per instance per model")
+    parser.add_argument("--instances", nargs="+", help="Explicit instance directories (relative or absolute)")
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
@@ -26,38 +29,82 @@ def main():
     domain = args.domain or cfg["experiment"]["domain"]
     asp_version = args.asp_version or cfg["experiment"]["asp_version"]
     model = args.model or cfg["experiment"]["models"][0]
+    models = [model] if args.model else cfg["experiment"]["models"]
     clingo_path = args.clingo or cfg["asp"]["clingo_path"]
     maxstep = args.maxstep or cfg["experiment"]["maxstep"]
     output_dir = Path(args.output_dir or cfg["experiment"]["output_dir"])
+    runs_per_instance = args.runs or cfg["experiment"].get("runs_per_instance", 1)
 
     base = Path(__file__).parent
-    if args.instance:
-        instance_dir = Path(args.instance)
+    if args.instances:
+        instance_dirs = [Path(p) for p in args.instances]
+    elif args.instance:
+        instance_dirs = [Path(args.instance)]
+    elif cfg["experiment"].get("instances"):
+        instance_dirs = [Path(p) for p in cfg["experiment"]["instances"]]
     else:
-        instance_dir = base / domain / asp_version
+        instance_dirs = [base / domain / asp_version]
 
     response_text = None
     if args.response_file:
         response_text = Path(args.response_file).read_text()
 
-    runner = ExperimentRunner(
-        base_dir=base,
-        domain=domain,
-        asp_version=asp_version,
-        instance_dir=instance_dir,
-        model=model,
-        clingo_path=clingo_path,
-        maxstep=maxstep,
-        config_path=cfg_path,
-        output_dir=output_dir,
-    )
-    result = runner.run(response_text=response_text)
+    results: List[Dict[str, Any]] = []
+    for m in models:
+        for inst in instance_dirs:
+            for _ in range(runs_per_instance):
+                runner = ExperimentRunner(
+                    base_dir=base,
+                    domain=domain,
+                    asp_version=asp_version,
+                    instance_dir=inst,
+                    model=m,
+                    clingo_path=clingo_path,
+                    maxstep=maxstep,
+                    config_path=cfg_path,
+                    output_dir=output_dir,
+                )
+                res = runner.run(response_text=response_text)
+                results.append(res)
+
+    summary = summarize_results(results)
+
+    output_data = {"summary": summary, "runs": results}
 
     if args.output:
-        Path(args.output).write_text(json.dumps(result, indent=2))
+        Path(args.output).write_text(json.dumps(output_data, indent=2))
     else:
-        print(json.dumps(result, indent=2))
+        print(json.dumps(output_data, indent=2))
 
 
 if __name__ == "__main__":
     main()
+
+
+def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    total = len(results)
+    completed = sum(1 for r in results if r.get("stage") == "complete")
+    sat = sum(
+        1
+        for r in results
+        if r.get("stage") == "complete" and r.get("asp", {}).get("satisfiable", False)
+    )
+    timing_vals = [r.get("llm_timing", {}) for r in results if r.get("llm_timing")]
+    prompt_tokens = [t.get("prompt_tokens") for t in timing_vals if t.get("prompt_tokens") is not None]
+    completion_tokens = [
+        t.get("completion_tokens") for t in timing_vals if t.get("completion_tokens") is not None
+    ]
+    elapsed = [t.get("elapsed") for t in timing_vals if t.get("elapsed") is not None]
+
+    def _avg(xs: List[float]) -> float:
+        return sum(xs) / len(xs) if xs else 0.0
+
+    return {
+        "total_runs": total,
+        "completed_runs": completed,
+        "sat_runs": sat,
+        "success_rate": sat / total if total else 0.0,
+        "avg_prompt_tokens": _avg(prompt_tokens),
+        "avg_completion_tokens": _avg(completion_tokens),
+        "avg_elapsed": _avg(elapsed),
+    }

@@ -13,6 +13,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "models": ["openai/gpt-4o"],
         "maxstep": 12,
         "output_dir": "results",
+        "instances": [],
+        "runs_per_instance": 1,
     },
     "asp": {"clingo_path": "clingo"},
     "openrouter": {"api_key": ""},
