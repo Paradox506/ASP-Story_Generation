@@ -9,6 +9,7 @@ from .openrouter_client import OpenRouterClient
 from .plan_parser import PlanParser
 from .prompt_generator import PromptGenerator
 from .config import load_api_key
+from .artifact_writer import ArtifactWriter
 
 
 class ExperimentRunner:
@@ -45,6 +46,13 @@ class ExperimentRunner:
         self.max_output_tokens = max_output_tokens
 
         domain_dir = base_dir / domain / asp_version
+        self.writer = ArtifactWriter(
+            output_dir,
+            domain,
+            asp_version,
+            model,
+            instance_dir.name,
+        )
         self.prompt_gen = PromptGenerator(domain, asp_version)
         self.parser = PlanParser(domain, domain_dir, instance_dir)
         self.validator = ASPValidator(domain, domain_dir, instance_dir, clingo_path=clingo_path)
@@ -162,37 +170,5 @@ class ExperimentRunner:
         parse: Optional[Dict],
         asp: Optional[Dict],
     ) -> None:
-        """
-        Save result JSON and a short log line. Directory layout:
-        results/{domain}/{asp_version}/{model}/{instance}/{run_id}/result.json
-        """
-        instance_name = self.instance_dir.name
-        dest_dir = (
-            self.output_dir
-            / run_id
-            / self.domain
-            / self.asp_version
-            / self.model.replace("/", "_")
-            / instance_name
-        )
-        os.makedirs(dest_dir, exist_ok=True)
-        (dest_dir / "result.json").write_text(json.dumps(result, indent=2))
-        (dest_dir / "prompt.txt").write_text(prompt or "")
-        if llm_raw is not None:
-            (dest_dir / "llm_raw.txt").write_text(llm_raw)
-        if parse is not None:
-            (dest_dir / "parse.json").write_text(json.dumps(parse, indent=2))
-        if asp is not None:
-            (dest_dir / "asp.json").write_text(json.dumps(asp, indent=2))
-        if result.get("evaluation") is not None:
-            (dest_dir / "evaluation.json").write_text(json.dumps(result["evaluation"], indent=2))
-
-        log_path = self.output_dir / "benchmark.log"
-        with open(log_path, "a") as f:
-            timing = result.get("llm_timing", {}) or {}
-            f.write(
-                f"{run_id} domain={self.domain} asp={self.asp_version} model={self.model} "
-                f"instance={instance_name} stage={result.get('stage')} success={result.get('success')} "
-                f"elapsed={timing.get('elapsed')} prompt_tokens={timing.get('prompt_tokens')} "
-                f"completion_tokens={timing.get('completion_tokens')}\n"
-            )
+        self.writer.write(run_id, result, prompt, llm_raw, parse, asp)
+        self.writer.append_log(run_id, result)
