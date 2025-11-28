@@ -14,6 +14,7 @@ class IntentionalityEvaluator:
         actions: List[Dict] = parse_result.get("actions", []) if parse_result else []
         intentional_actions = [a for a in actions if a.get("actionId") not in (0, 7, 8)]
         actions_with_plan = [a for a in intentional_actions if a.get("character_plan")]
+        filled = [a for a in actions if a.get("_filled_params")]
 
         def _ratio(num: int, den: int) -> float:
             return num / den if den else 0.0
@@ -35,5 +36,6 @@ class IntentionalityEvaluator:
             "nonexec_details": nonexec,
             "open_frames_details": open_frames,
             "unjustified_details": unjustified,
+            "filled_param_actions": len(filled),
             "plan_length": len(actions),
         }
