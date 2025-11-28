@@ -48,6 +48,14 @@ class ExperimentRunner:
         self.prompt_gen = PromptGenerator(domain, asp_version)
         self.parser = PlanParser(domain, domain_dir, instance_dir)
         self.validator = ASPValidator(domain, domain_dir, instance_dir, clingo_path=clingo_path)
+        self.evaluator = None
+        if domain == "secret_agent":
+            try:
+                from .evaluators.causal_evaluator import CausalEvaluator
+
+                self.evaluator = CausalEvaluator()
+            except Exception:
+                self.evaluator = None
 
     def run(self, response_text: Optional[str] = None, run_seq: int = 0) -> Dict:
         prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
@@ -94,6 +102,10 @@ class ExperimentRunner:
 
         asp_result = self.validator.validate_plan(parse_result["actions"], maxstep=self.maxstep)
 
+        evaluation = None
+        if self.evaluator:
+            evaluation = self.evaluator.evaluate(asp_result, parse_result)
+
         result = {
             "stage": "complete",
             "success": True,
@@ -104,6 +116,7 @@ class ExperimentRunner:
             "asp": asp_result,
             "run_id": run_id,
             "metadata": self._metadata(),
+            "evaluation": evaluation,
         }
         self._persist_result(result, run_id, prompt, llm_raw=response_text, parse=parse_result, asp=asp_result)
         return result

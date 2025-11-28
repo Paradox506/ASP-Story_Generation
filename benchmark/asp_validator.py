@@ -103,6 +103,7 @@ class ASPValidator:
         unjust = []
         open_frames = []
         conflicts = []
+        acts = []
         for atom in values:
             if atom.startswith("nonexec_feedback"):
                 parsed = self._parse_nonexec(atom)
@@ -116,11 +117,14 @@ class ASPValidator:
             elif atom.startswith("conflict"):
                 parsed = self._parse_conflict(atom)
                 conflicts.append(parsed or atom)
+            elif atom.startswith("act("):
+                acts.append(atom)
         return {
             "nonexec_feedback": nonexec,
             "unjustified": unjust,
             "open_commitment_frames": open_frames,
             "conflicts": conflicts,
+            "acts": acts,
         }
 
     def _parse_nonexec(self, atom: str) -> Dict:
