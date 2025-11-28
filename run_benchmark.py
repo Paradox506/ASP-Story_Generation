@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 import json
 from typing import List, Dict, Any
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from benchmark.experiment_runner import ExperimentRunner
 from benchmark.config import load_config
@@ -21,6 +22,7 @@ def main():
     parser.add_argument("--output-dir", help="Base directory to store run artifacts")
     parser.add_argument("--runs", type=int, help="Runs per instance per model")
     parser.add_argument("--instances", nargs="+", help="Explicit instance directories (relative or absolute)")
+    parser.add_argument("--workers", type=int, help="Number of parallel workers (default serial)")
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
@@ -34,6 +36,7 @@ def main():
     maxstep = args.maxstep or cfg["experiment"]["maxstep"]
     output_dir = Path(args.output_dir or cfg["experiment"]["output_dir"])
     runs_per_instance = args.runs or cfg["experiment"].get("runs_per_instance", 1)
+    workers = args.workers or cfg["experiment"].get("workers", 1)
 
     base = Path(__file__).parent
     if args.instances:
@@ -50,22 +53,30 @@ def main():
         response_text = Path(args.response_file).read_text()
 
     results: List[Dict[str, Any]] = []
-    for m in models:
-        for inst in instance_dirs:
-            for _ in range(runs_per_instance):
-                runner = ExperimentRunner(
-                    base_dir=base,
-                    domain=domain,
-                    asp_version=asp_version,
-                    instance_dir=inst,
-                    model=m,
-                    clingo_path=clingo_path,
-                    maxstep=maxstep,
-                    config_path=cfg_path,
-                    output_dir=output_dir,
-                )
-                res = runner.run(response_text=response_text)
-                results.append(res)
+    tasks = [(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)]
+
+    def run_task(model_name: str, inst_dir: Path):
+        runner = ExperimentRunner(
+            base_dir=base,
+            domain=domain,
+            asp_version=asp_version,
+            instance_dir=inst_dir,
+            model=model_name,
+            clingo_path=clingo_path,
+            maxstep=maxstep,
+            config_path=cfg_path,
+            output_dir=output_dir,
+        )
+        return runner.run(response_text=response_text)
+
+    if workers and workers > 1:
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            future_map = {ex.submit(run_task, m, inst): (m, inst) for m, inst in tasks}
+            for fut in as_completed(future_map):
+                results.append(fut.result())
+    else:
+        for m, inst in tasks:
+            results.append(run_task(m, inst))
 
     summary = summarize_results(results)
 

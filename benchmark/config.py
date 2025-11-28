@@ -15,6 +15,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "output_dir": "results",
         "instances": [],
         "runs_per_instance": 1,
+        "workers": 1,
     },
     "asp": {"clingo_path": "clingo"},
     "openrouter": {"api_key": ""},
