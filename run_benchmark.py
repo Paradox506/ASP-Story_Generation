@@ -122,6 +122,8 @@ def main():
             run_id_override=run_id_base,
             max_tokens=mtok,
             max_output_tokens=mot,
+            exp_cfg=exp_cfg,
+            llm_cfg=llm_cfg,
         )
         return runner.run(response_text=response_text, run_seq=seq)
 

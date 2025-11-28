@@ -10,6 +10,7 @@ from .plan_parser import PlanParser
 from .prompt_generator import PromptGenerator
 from .config import load_api_key
 from .artifact_writer import ArtifactWriter
+from .config_loader import ExperimentConfig, LlmConfig
 
 
 class ExperimentRunner:
@@ -31,6 +32,8 @@ class ExperimentRunner:
         run_id_override: Optional[str] = None,
         max_tokens: Optional[int] = None,
         max_output_tokens: Optional[int] = None,
+        exp_cfg: Optional[ExperimentConfig] = None,
+        llm_cfg: Optional[LlmConfig] = None,
     ):
         self.base_dir = base_dir
         self.domain = domain
@@ -44,6 +47,8 @@ class ExperimentRunner:
         self.run_id_override = run_id_override
         self.max_tokens = max_tokens
         self.max_output_tokens = max_output_tokens
+        self.exp_cfg = exp_cfg
+        self.llm_cfg = llm_cfg
 
         domain_dir = base_dir / domain / asp_version
         self.writer = ArtifactWriter(
