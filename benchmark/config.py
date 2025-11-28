@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional
+from dataclasses import dataclass
+from typing import List
 
 import yaml
 
@@ -26,6 +28,30 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "model_max_output_tokens": {},
     },
 }
+
+
+@dataclass
+class LlmConfig:
+    models: List[str]
+    max_tokens: Optional[int]
+    max_output_tokens: Optional[int]
+    model_max_tokens: Dict[str, int]
+    model_max_output_tokens: Dict[str, int]
+
+
+@dataclass
+class ExperimentConfig:
+    domain: str
+    asp_version: str
+    mode: str
+    models: List[str]
+    runs_per_instance: int
+    instances: List[str]
+    maxstep: int
+    output_dir: str
+    workers: int
+
+    llm: LlmConfig
 
 
 def load_api_key(config_path: Optional[Path] = None) -> str:

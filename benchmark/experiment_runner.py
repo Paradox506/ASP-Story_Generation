@@ -73,7 +73,7 @@ class ExperimentRunner:
 
     def run(self, response_text: Optional[str] = None, run_seq: int = 0) -> Dict:
         prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
-        base_id = self.run_id_override or datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        base_id = self.run_id_override or datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         run_id = f"{base_id}/run_{run_seq:04d}"
         if response_text is None:
             api_key = load_api_key(self.config_path)
