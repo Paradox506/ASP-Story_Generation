@@ -82,7 +82,7 @@ def main():
     elif cfg["experiment"].get("instances"):
         instance_dirs = [Path(p) for p in cfg["experiment"]["instances"]]
     else:
-        instance_dirs = [base / domain / asp_version]
+        instance_dirs = list(_auto_instances(base, domain, asp_version))
 
     response_text = None
     if args.response_file:
@@ -143,3 +143,26 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def _auto_instances(base: Path, domain: str, asp_version: str):
+    """
+    Heuristic instance discovery when none provided.
+    - Aladdin/Secret Agent/Western: default to domain/asp_version if files exist.
+    - Secret Agent: if instances dir exists, pick first random instance.
+    """
+    candidate = base / domain / asp_version
+    if candidate.exists():
+        yield candidate
+        return
+    if domain == "secret_agent":
+        inst_root = base / domain / "instances"
+        if inst_root.exists():
+            # pick first instance folder
+            for p in sorted(inst_root.glob("*/*/*/")):
+                yield p
+                return
+    # fallback to base/asp_version if exists
+    fallback = base / domain / "base"
+    if fallback.exists():
+        yield fallback
