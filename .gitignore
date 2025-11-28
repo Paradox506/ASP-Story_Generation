@@ -12,3 +12,7 @@ __pycache__/
 # Results / cache
 results/
 benchmark.log
+
+# Local config keys
+config.local.yaml
+.openrouter.yaml

@@ -5,6 +5,7 @@ from .asp_validator import ASPValidator
 from .openrouter_client import OpenRouterClient
 from .plan_parser import PlanParser
 from .prompt_generator import PromptGenerator
+from .config import load_api_key
 
 
 class ExperimentRunner:
@@ -38,7 +39,8 @@ class ExperimentRunner:
     def run(self, response_text: Optional[str] = None) -> Dict:
         prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
         if response_text is None:
-            client = OpenRouterClient(self.model)
+            api_key = load_api_key()
+            client = OpenRouterClient(self.model, api_key=api_key)
             llm_result = client.generate(prompt)
             if not llm_result.get("success"):
                 return {"stage": "llm", "success": False, "error": llm_result.get("error")}

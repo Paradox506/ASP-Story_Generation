@@ -10,7 +10,13 @@ class OpenRouterClient:
     Minimal OpenRouter chat client.
     """
 
-    def __init__(self, model: str, api_key: str | None = None, temperature: float = 0.7, max_tokens: int = 2000):
+    def __init__(
+        self,
+        model: str,
+        api_key: str | None = None,
+        temperature: float = 0.7,
+        max_tokens: int = 2000,
+    ):
         self.model = model
         self.api_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
         self.temperature = temperature

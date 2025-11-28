@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 
 from benchmark.experiment_runner import ExperimentRunner
+from benchmark.config import load_api_key
 
 
 def main():
@@ -15,6 +16,7 @@ def main():
     parser.add_argument("--maxstep", type=int, default=12)
     parser.add_argument("--response-file", help="Use pre-saved LLM response instead of calling API")
     parser.add_argument("--output", help="Where to write JSON result")
+    parser.add_argument("--config", help="Optional config YAML containing openrouter.api_key")
     args = parser.parse_args()
 
     base = Path(__file__).parent
@@ -27,6 +29,10 @@ def main():
     response_text = None
     if args.response_file:
         response_text = Path(args.response_file).read_text()
+
+    # ensure API key if needed
+    if not response_text:
+        _ = load_api_key(Path(args.config) if args.config else None)
 
     runner = ExperimentRunner(
         base_dir=base,
