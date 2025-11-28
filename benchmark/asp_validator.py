@@ -5,6 +5,11 @@ from typing import Dict, List
 import subprocess
 import re
 
+try:
+    import clingo  # type: ignore
+except Exception:  # pragma: no cover
+    clingo = None
+
 from .utils import ActionMapper, extract_intention
 
 
@@ -14,11 +19,19 @@ class ASPValidator:
     Converts LLM actions into ASP constraints and inspects clingo JSON output.
     """
 
-    def __init__(self, domain: str, domain_dir: Path, instance_dir: Path, clingo_path: str = "clingo"):
+    def __init__(
+        self,
+        domain: str,
+        domain_dir: Path,
+        instance_dir: Path,
+        clingo_path: str = "clingo",
+        use_clingo_api: bool = False,
+    ):
         self.domain = domain
         self.domain_dir = domain_dir
         self.instance_dir = instance_dir
         self.clingo_path = clingo_path
+        self.use_clingo_api = use_clingo_api and clingo is not None
         self.mapper = ActionMapper(domain)
 
     def _collect_files(self) -> List[str]:
@@ -67,6 +80,11 @@ class ASPValidator:
 
     def validate_plan(self, actions: List[Dict], maxstep: int = 10) -> Dict:
         asp_constraints = self._constraints_from_actions(actions)
+
+        if self.use_clingo_api:
+            return self._validate_with_api(asp_constraints, maxstep)
+
+        # fallback to subprocess
         with tempfile.NamedTemporaryFile("w+", suffix=".lp", delete=False) as tf:
             tf.write(asp_constraints)
             constraint_path = tf.name
@@ -94,8 +112,33 @@ class ASPValidator:
                 values = data["Call"][0]["Witnesses"][0]["Value"] if data["Call"] and data["Call"][0]["Witnesses"] else []
                 result.update(self._extract_symbols(values))
         except Exception:
-            # leave parsed fields as defaults
             pass
+        return result
+
+    def _validate_with_api(self, asp_constraints: str, maxstep: int) -> Dict:
+        result: Dict = {
+            "used_api": True,
+            "satisfiable": False,
+            "nonexec_feedback": [],
+            "unjustified": [],
+            "open_commitment_frames": [],
+            "conflicts": [],
+            "acts": [],
+        }
+        ctrl = clingo.Control(["-c", f"maxstep={maxstep}"])
+        for f in self._collect_files():
+            ctrl.load(f)
+        ctrl.add("base", [], asp_constraints)
+        ctrl.ground([("base", [])])
+        models = []
+
+        def on_model(m):
+            models.append([str(s) for s in m.symbols(shown=True)])
+
+        ctrl.solve(on_model=on_model)
+        if models:
+            result["satisfiable"] = True
+            result.update(self._extract_symbols(models[0]))
         return result
 
     def _extract_symbols(self, values: List[str]) -> Dict:
