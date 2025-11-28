@@ -13,6 +13,7 @@ class LlmConfig:
     max_output_tokens: Optional[int]
     model_max_tokens: Dict[str, int]
     model_max_output_tokens: Dict[str, int]
+    domain_max_output_tokens: Dict[str, int]
 
 
 @dataclass
@@ -57,6 +58,7 @@ def to_experiment_config(cfg: Dict) -> (ExperimentConfig, LlmConfig):
         max_output_tokens=llm_cfg.get("max_output_tokens"),
         model_max_tokens=llm_cfg.get("model_max_tokens", {}) or {},
         model_max_output_tokens=llm_cfg.get("model_max_output_tokens", {}) or {},
+        domain_max_output_tokens=llm_cfg.get("domain_max_output_tokens", {}) or {},
     )
     return exp_cfg, llm
 

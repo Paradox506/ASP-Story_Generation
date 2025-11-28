@@ -81,6 +81,7 @@ def main():
     workers = args.workers or exp_cfg.workers
     model_max_tokens_map = llm_cfg.model_max_tokens or {}
     model_max_map = llm_cfg.model_max_output_tokens or {}
+    domain_max_map = llm_cfg.domain_max_output_tokens or {}
     global_max_tokens = args.max_tokens or llm_cfg.max_tokens
     global_max_output_tokens = args.max_output_tokens or llm_cfg.max_output_tokens
 
@@ -121,6 +122,8 @@ def main():
         mot = global_max_output_tokens
         if mot is None:
             mot = model_max_map.get(model_name)
+        if mot is None:
+            mot = domain_max_map.get(domain)
         mtok = global_max_tokens
         if mtok is None:
             mtok = model_max_tokens_map.get(model_name)

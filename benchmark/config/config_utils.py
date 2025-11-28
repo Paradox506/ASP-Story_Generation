@@ -28,6 +28,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "model_max_tokens": {},
         "max_output_tokens": None,
         "model_max_output_tokens": {},
+        "domain_max_output_tokens": {},
     },
 }
 
