@@ -81,6 +81,7 @@ class ASPValidator:
 
     def validate_plan(self, actions: List[Dict], maxstep: int = 10) -> Dict:
         asp_constraints = self._constraints_from_actions(actions)
+        self.last_constraints = asp_constraints
 
         if self.use_clingo_api:
             return self._validate_with_api(asp_constraints, maxstep)

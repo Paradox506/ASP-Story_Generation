@@ -25,6 +25,7 @@ class ArtifactWriter:
         parse: Optional[Dict],
         asp: Optional[Dict],
         raw_clingo: Optional[str] = None,
+        constraints: Optional[str] = None,
     ) -> Path:
         dest_dir = (
             self.output_dir
@@ -47,6 +48,8 @@ class ArtifactWriter:
             (dest_dir / "evaluation.json").write_text(json.dumps(result["evaluation"], indent=2))
         if raw_clingo is not None:
             (dest_dir / "clingo_raw.json").write_text(raw_clingo)
+        if constraints is not None:
+            (dest_dir / "constraints.lp").write_text(constraints)
         return dest_dir
 
     def append_log(self, run_id: str, result: Dict):

@@ -160,6 +160,7 @@ class ExperimentRunner:
             parse=parse_result,
             asp=asp_result,
             raw_clingo=self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
+            constraints=getattr(self.validator, "last_constraints", None),
         )
         return result
 
@@ -185,6 +186,7 @@ class ExperimentRunner:
         parse: Optional[Dict],
         asp: Optional[Dict],
         raw_clingo: Optional[str] = None,
+        constraints: Optional[str] = None,
     ) -> None:
-        self.writer.write(run_id, result, prompt, llm_raw, parse, asp, raw_clingo=raw_clingo)
+        self.writer.write(run_id, result, prompt, llm_raw, parse, asp, raw_clingo=raw_clingo, constraints=constraints)
         self.writer.append_log(run_id, result)
