@@ -37,8 +37,8 @@ class AladdinPromptGenerator(BasePromptGenerator):
         prompt_text = super().load_prompt(base_dir, instance_dir)
         if loyalty_text:
             parts = prompt_text.split("\n\n")
-            if len(parts) >= 2:
-                prompt_text = "\n\n".join([parts[0], parts[1], loyalty_text] + parts[2:])
+            if len(parts) >= 1:
+                prompt_text = "\n\n".join([parts[0], loyalty_text] + parts[1:])
             else:
                 prompt_text = prompt_text + "\n\n" + loyalty_text
         return prompt_text
