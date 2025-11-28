@@ -63,6 +63,13 @@ class ExperimentRunner:
                 self.evaluator = ConflictEvaluator()
             except Exception:
                 self.evaluator = None
+        elif domain == "aladdin":
+            try:
+                from .evaluators.intentionality_evaluator import IntentionalityEvaluator
+
+                self.evaluator = IntentionalityEvaluator()
+            except Exception:
+                self.evaluator = None
 
     def run(self, response_text: Optional[str] = None, run_seq: int = 0) -> Dict:
         prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
