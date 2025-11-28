@@ -1,0 +1,14 @@
+# Python / env
+.venv/
+__pycache__/
+
+# macOS
+.DS_Store
+
+# Editor / tooling
+.idea/
+.vscode/
+
+# Results / cache
+results/
+benchmark.log
