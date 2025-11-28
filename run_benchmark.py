@@ -69,9 +69,7 @@ def main():
     runs_per_instance = args.runs or cfg["experiment"].get("runs_per_instance", 1)
     workers = args.workers or cfg["experiment"].get("workers", 1)
     model_max_map = cfg.get("llm", {}).get("model_max_output_tokens", {}) or {}
-    max_output_tokens = args.max_output_tokens or cfg.get("llm", {}).get("max_output_tokens")
-    if max_output_tokens is None:
-        max_output_tokens = model_max_map.get(model)
+    global_max_output_tokens = args.max_output_tokens or cfg.get("llm", {}).get("max_output_tokens")
 
     base = Path(__file__).parent
     if args.instances:
@@ -98,6 +96,10 @@ def main():
     tasks = [(idx, m, inst) for idx, (m, inst) in enumerate([(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)])]
 
     def run_task(seq: int, model_name: str, inst_dir: Path):
+        # Resolve per-model max_output_tokens: CLI/global override first, otherwise model-specific map
+        mot = global_max_output_tokens
+        if mot is None:
+            mot = model_max_map.get(model_name)
         runner = ExperimentRunner(
             base_dir=base,
             domain=domain,
@@ -109,7 +111,7 @@ def main():
             config_path=cfg_path,
             output_dir=output_dir,
             run_id_override=run_id_base,
-            max_output_tokens=max_output_tokens,
+            max_output_tokens=mot,
         )
         return runner.run(response_text=response_text, run_seq=seq)
 
