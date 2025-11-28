@@ -10,7 +10,7 @@ try:
 except Exception:  # pragma: no cover
     clingo = None
 
-from benchmark.parser.action_utils import ActionMapper, extract_intention
+from benchmark.asp.action_utils import ActionMapper, extract_intention
 
 
 class ASPValidator:
