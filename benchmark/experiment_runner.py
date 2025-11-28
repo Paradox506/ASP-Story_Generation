@@ -1,5 +1,8 @@
 from pathlib import Path
 from typing import Dict, Optional
+from datetime import datetime
+import json
+import os
 
 from .asp_validator import ASPValidator
 from .openrouter_client import OpenRouterClient
@@ -23,6 +26,7 @@ class ExperimentRunner:
         clingo_path: str = "clingo",
         maxstep: int = 12,
         config_path: Optional[Path] = None,
+        output_dir: Path = Path("results"),
     ):
         self.base_dir = base_dir
         self.domain = domain
@@ -32,6 +36,7 @@ class ExperimentRunner:
         self.clingo_path = clingo_path
         self.maxstep = maxstep
         self.config_path = config_path
+        self.output_dir = output_dir
 
         domain_dir = base_dir / domain / asp_version
         self.prompt_gen = PromptGenerator(domain, asp_version)
@@ -57,7 +62,7 @@ class ExperimentRunner:
 
         asp_result = self.validator.validate_plan(parse_result["actions"], maxstep=self.maxstep)
 
-        return {
+        result = {
             "stage": "complete",
             "success": True,
             "prompt": prompt,
@@ -66,3 +71,31 @@ class ExperimentRunner:
             "parse": parse_result,
             "asp": asp_result,
         }
+        self._persist_result(result)
+        return result
+
+    def _persist_result(self, result: Dict) -> None:
+        """
+        Save result JSON and a short log line. Directory layout:
+        results/{domain}/{asp_version}/{model}/{instance}/{run_id}/result.json
+        """
+        run_id = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        instance_name = self.instance_dir.name
+        dest_dir = (
+            self.output_dir
+            / self.domain
+            / self.asp_version
+            / self.model.replace("/", "_")
+            / instance_name
+            / run_id
+        )
+        os.makedirs(dest_dir, exist_ok=True)
+        out_path = dest_dir / "result.json"
+        out_path.write_text(json.dumps(result, indent=2))
+
+        log_path = self.output_dir / "benchmark.log"
+        with open(log_path, "a") as f:
+            f.write(
+                f"{run_id} domain={self.domain} asp={self.asp_version} model={self.model} "
+                f"instance={instance_name} stage={result.get('stage')} success={result.get('success')}\n"
+            )

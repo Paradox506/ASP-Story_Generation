@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--response-file", help="Use pre-saved LLM response instead of calling API")
     parser.add_argument("--output", help="Where to write JSON result")
     parser.add_argument("--config", help="Optional config YAML containing openrouter.api_key")
+    parser.add_argument("--output-dir", default="results", help="Base directory to store run artifacts")
     args = parser.parse_args()
 
     base = Path(__file__).parent
@@ -39,6 +40,7 @@ def main():
         clingo_path=args.clingo,
         maxstep=args.maxstep,
         config_path=Path(args.config) if args.config else None,
+        output_dir=Path(args.output_dir),
     )
     result = runner.run(response_text=response_text)
 
