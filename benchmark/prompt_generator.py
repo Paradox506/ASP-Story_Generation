@@ -27,27 +27,39 @@ class PromptGenerator:
             prompt_text = path.read_text()
 
         if self.domain == "aladdin" and instance_dir is not None:
-            roles, loyals = self._parse_aladdin_instance(instance_dir / "instance.lp")
-            if roles or loyals:
-                prompt_text += "\n\n"
-            if roles:
-                prompt_text += "Roles for this instance:\n"
-                for name, desc in roles:
-                    prompt_text += f"- {name}: {desc}\n"
-            if loyals:
-                prompt_text += "Loyalty relations:\n"
-                for a, b in loyals:
-                    prompt_text += f"- {a} is loyal to {b}\n"
+            prompt_text = self._augment_aladdin(prompt_text, instance_dir)
         elif self.domain == "western" and instance_dir is not None:
-            intro = self._read_optional(instance_dir / "intro.txt")
-            if intro:
-                prompt_text += "\n\nInstance intro:\n" + intro
+            prompt_text = self._augment_western(prompt_text, instance_dir)
         elif self.domain == "secret_agent" and instance_dir is not None:
-            intro = self._read_optional(instance_dir / "intro.txt")
-            if prompt_text.strip() == "" and intro:
-                prompt_text = intro
-            elif intro:
-                prompt_text += "\n\nMap description:\n" + intro
+            prompt_text = self._augment_secret_agent(prompt_text, instance_dir)
+        return prompt_text
+
+    def _augment_aladdin(self, prompt_text: str, instance_dir: Path) -> str:
+        roles, loyals = self._parse_aladdin_instance(instance_dir / "instance.lp")
+        if roles or loyals:
+            prompt_text += "\n\n"
+        if roles:
+            prompt_text += "Roles for this instance:\n"
+            for name, desc in roles:
+                prompt_text += f"- {name}: {desc}\n"
+        if loyals:
+            prompt_text += "Loyalty relations:\n"
+            for a, b in loyals:
+                prompt_text += f"- {a} is loyal to {b}\n"
+        return prompt_text
+
+    def _augment_western(self, prompt_text: str, instance_dir: Path) -> str:
+        intro = self._read_optional(instance_dir / "intro.txt")
+        if intro:
+            prompt_text += "\n\nInstance intro:\n" + intro
+        return prompt_text
+
+    def _augment_secret_agent(self, prompt_text: str, instance_dir: Path) -> str:
+        intro = self._read_optional(instance_dir / "intro.txt")
+        if prompt_text.strip() == "" and intro:
+            prompt_text = intro
+        elif intro:
+            prompt_text += "\n\nMap description:\n" + intro
         return prompt_text
 
     def _parse_aladdin_instance(self, path: Path) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
