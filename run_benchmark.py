@@ -3,11 +3,11 @@ from pathlib import Path
 import json
 from typing import List, Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from benchmark.experiment_runner import ExperimentRunner
-from benchmark.config_loader import load_combined_config, to_experiment_config
+from benchmark.runner.experiment_runner import ExperimentRunner
+from benchmark.config.config_loader import load_combined_config, to_experiment_config
 from benchmark.domains import get_adapter
 
 
@@ -44,7 +44,6 @@ def main():
     parser = argparse.ArgumentParser(description="Minimal one-off benchmark runner")
     parser.add_argument("--config", default="config.yaml", help="Config YAML path")
     parser.add_argument("--domain", choices=["aladdin", "secret_agent", "western"], help="Override domain")
-    parser.add_argument("--asp-version", help="Override asp version")
     parser.add_argument("--instance", help="Path to instance dir (defaults to domain/asp_version)")
     parser.add_argument("--model", help="Override model name")
     parser.add_argument("--clingo", help="Override clingo path")
@@ -64,13 +63,19 @@ def main():
     exp_cfg, llm_cfg = to_experiment_config(cfg)
 
     domain = args.domain or exp_cfg.domain
-    asp_version = args.asp_version or exp_cfg.asp_version
-    model = args.model or llm_cfg.models[0]
-    models = [model] if args.model else llm_cfg.models
+    asp_version_default = exp_cfg.asp_version
+    if args.response_file:
+        # Offline mode: use a single model label (no API calls)
+        model = args.model or (llm_cfg.models[0] if llm_cfg.models else "mock")
+        models = [model]
+        runs_per_instance = 1
+    else:
+        model = args.model or llm_cfg.models[0]
+        models = [model] if args.model else llm_cfg.models
+        runs_per_instance = args.runs or exp_cfg.runs_per_instance
     clingo_path = args.clingo or cfg["asp"]["clingo_path"]
     maxstep = args.maxstep or exp_cfg.maxstep
     output_dir = Path(args.output_dir or exp_cfg.output_dir)
-    runs_per_instance = args.runs or exp_cfg.runs_per_instance
     workers = args.workers or exp_cfg.workers
     model_max_tokens_map = llm_cfg.model_max_tokens or {}
     model_max_map = llm_cfg.model_max_output_tokens or {}
@@ -86,7 +91,7 @@ def main():
         instance_dirs = [Path(p) for p in exp_cfg.instances]
     else:
         adapter = get_adapter(domain)
-        instance_dirs = adapter.default_instance_dirs(base, asp_version)
+        instance_dirs = adapter.default_instance_dirs(base, asp_version_default)
 
     response_text = None
     if args.response_file:
@@ -102,6 +107,13 @@ def main():
     results: List[Dict[str, Any]] = []
     tasks = [(idx, m, inst) for idx, (m, inst) in enumerate([(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)])]
 
+    def infer_asp_version(inst_dir: Path, default_version: str) -> str:
+        # If the instance path already indicates base/original, honor it; otherwise use default from config.
+        for part in inst_dir.parts[::-1]:
+            if part in ("base", "original"):
+                return part
+        return default_version
+
     def run_task(seq: int, model_name: str, inst_dir: Path):
         # Resolve per-model max_output_tokens: CLI/global override first, otherwise model-specific map
         mot = global_max_output_tokens
@@ -110,6 +122,7 @@ def main():
         mtok = global_max_tokens
         if mtok is None:
             mtok = model_max_tokens_map.get(model_name)
+        asp_version = infer_asp_version(inst_dir, exp_cfg.asp_version)
         runner = ExperimentRunner(
             base_dir=base,
             domain=domain,

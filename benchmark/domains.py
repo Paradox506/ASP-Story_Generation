@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, List, Optional
 
-from .prompt_generator import get_prompt_generator
-from .evaluators.causal_evaluator import CausalEvaluator
-from .evaluators.conflict_evaluator import ConflictEvaluator
-from .evaluators.intentionality_evaluator import IntentionalityEvaluator
+from benchmark.prompts.prompt_generator import get_prompt_generator
+from benchmark.evaluators.causal_evaluator import CausalEvaluator
+from benchmark.evaluators.conflict_evaluator import ConflictEvaluator
+from benchmark.evaluators.intentionality_evaluator import IntentionalityEvaluator
 
 
 @dataclass
