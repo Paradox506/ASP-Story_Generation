@@ -18,8 +18,13 @@ openrouter:
 
 llm:
   max_tokens: null
-  model_max_tokens: {}
   max_output_tokens: null
+  model_max_tokens:
+    openai/o1: 13000
+    openai/o1-mini: 17000
+    anthropic/claude-3.5-sonnet: 5000
+    anthropic/claude-3.7-sonnet: 9000
+    openai/gpt-3.5-turbo: 3000
   model_max_output_tokens:
     openai/o1: 13000
     openai/o1-mini: 17000
