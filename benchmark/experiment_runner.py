@@ -119,11 +119,11 @@ class ExperimentRunner:
         instance_name = self.instance_dir.name
         dest_dir = (
             self.output_dir
+            / run_id
             / self.domain
             / self.asp_version
             / self.model.replace("/", "_")
             / instance_name
-            / run_id
         )
         os.makedirs(dest_dir, exist_ok=True)
         (dest_dir / "result.json").write_text(json.dumps(result, indent=2))
