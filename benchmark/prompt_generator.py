@@ -28,6 +28,11 @@ class AladdinPromptGenerator(BasePromptGenerator):
             loyalty_path = instance_dir / "loyalty.txt"
             if loyalty_path.exists():
                 loyalty_text = loyalty_path.read_text().strip()
+        else:
+            # allow loyalty at asp_version directory
+            loyalty_path = base_dir / self.domain / self.asp_version / "loyalty.txt"
+            if loyalty_path.exists():
+                loyalty_text = loyalty_path.read_text().strip()
 
         prompt_text = super().load_prompt(base_dir, instance_dir)
         if loyalty_text:
