@@ -30,10 +30,6 @@ def main():
     if args.response_file:
         response_text = Path(args.response_file).read_text()
 
-    # ensure API key if needed
-    if not response_text:
-        _ = load_api_key(Path(args.config) if args.config else None)
-
     runner = ExperimentRunner(
         base_dir=base,
         domain=args.domain,
@@ -42,6 +38,7 @@ def main():
         model=args.model,
         clingo_path=args.clingo,
         maxstep=args.maxstep,
+        config_path=Path(args.config) if args.config else None,
     )
     result = runner.run(response_text=response_text)
 

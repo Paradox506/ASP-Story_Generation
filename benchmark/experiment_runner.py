@@ -22,6 +22,7 @@ class ExperimentRunner:
         model: str,
         clingo_path: str = "clingo",
         maxstep: int = 12,
+        config_path: Optional[Path] = None,
     ):
         self.base_dir = base_dir
         self.domain = domain
@@ -30,6 +31,7 @@ class ExperimentRunner:
         self.model = model
         self.clingo_path = clingo_path
         self.maxstep = maxstep
+        self.config_path = config_path
 
         domain_dir = base_dir / domain / asp_version
         self.prompt_gen = PromptGenerator(domain, asp_version)
@@ -39,7 +41,7 @@ class ExperimentRunner:
     def run(self, response_text: Optional[str] = None) -> Dict:
         prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
         if response_text is None:
-            api_key = load_api_key()
+            api_key = load_api_key(self.config_path)
             client = OpenRouterClient(self.model, api_key=api_key)
             llm_result = client.generate(prompt)
             if not llm_result.get("success"):
