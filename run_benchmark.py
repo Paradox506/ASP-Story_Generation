@@ -3,10 +3,11 @@ from pathlib import Path
 import json
 from typing import List, Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from datetime import datetime, timezone
 
 from benchmark.experiment_runner import ExperimentRunner
-from benchmark.config import load_config
+from benchmark.config_loader import load_combined_config, to_experiment_config
+from benchmark.domains import get_adapter
 
 
 def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -58,31 +59,33 @@ def main():
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
-    cfg = load_config(cfg_path)
+    cfg = load_combined_config(Path("config.default.yaml"), cfg_path)
+    exp_cfg, llm_cfg = to_experiment_config(cfg)
 
-    domain = args.domain or cfg["experiment"]["domain"]
-    asp_version = args.asp_version or cfg["experiment"]["asp_version"]
-    model = args.model or cfg["experiment"]["models"][0]
-    models = [model] if args.model else cfg["experiment"]["models"]
+    domain = args.domain or exp_cfg.domain
+    asp_version = args.asp_version or exp_cfg.asp_version
+    model = args.model or llm_cfg.models[0]
+    models = [model] if args.model else llm_cfg.models
     clingo_path = args.clingo or cfg["asp"]["clingo_path"]
-    maxstep = args.maxstep or cfg["experiment"]["maxstep"]
-    output_dir = Path(args.output_dir or cfg["experiment"]["output_dir"])
-    runs_per_instance = args.runs or cfg["experiment"].get("runs_per_instance", 1)
-    workers = args.workers or cfg["experiment"].get("workers", 1)
-    model_max_tokens_map = cfg.get("llm", {}).get("model_max_tokens", {}) or {}
-    model_max_map = cfg.get("llm", {}).get("model_max_output_tokens", {}) or {}
-    global_max_tokens = args.max_tokens or cfg.get("llm", {}).get("max_tokens")
-    global_max_output_tokens = args.max_output_tokens or cfg.get("llm", {}).get("max_output_tokens")
+    maxstep = args.maxstep or exp_cfg.maxstep
+    output_dir = Path(args.output_dir or exp_cfg.output_dir)
+    runs_per_instance = args.runs or exp_cfg.runs_per_instance
+    workers = args.workers or exp_cfg.workers
+    model_max_tokens_map = llm_cfg.model_max_tokens or {}
+    model_max_map = llm_cfg.model_max_output_tokens or {}
+    global_max_tokens = args.max_tokens or llm_cfg.max_tokens
+    global_max_output_tokens = args.max_output_tokens or llm_cfg.max_output_tokens
 
     base = Path(__file__).parent
     if args.instances:
         instance_dirs = [Path(p) for p in args.instances]
     elif args.instance:
         instance_dirs = [Path(args.instance)]
-    elif cfg["experiment"].get("instances"):
-        instance_dirs = [Path(p) for p in cfg["experiment"]["instances"]]
+    elif exp_cfg.instances:
+        instance_dirs = [Path(p) for p in exp_cfg.instances]
     else:
-        instance_dirs = list(_auto_instances(base, domain, asp_version))
+        adapter = get_adapter(domain)
+        instance_dirs = adapter.default_instance_dirs(base, asp_version)
 
     response_text = None
     if args.response_file:
@@ -93,7 +96,7 @@ def main():
         run_id_base = Path(output_dir).name
         # if output_dir is default "results", append timestamp to avoid clashes
         if run_id_base == "results":
-            run_id_base = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+            run_id_base = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
     results: List[Dict[str, Any]] = []
     tasks = [(idx, m, inst) for idx, (m, inst) in enumerate([(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)])]
