@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 from typing import Dict, List
 import subprocess
+import re
 
 from .utils import ActionMapper, extract_intention
 
@@ -104,11 +105,14 @@ class ASPValidator:
         conflicts = []
         for atom in values:
             if atom.startswith("nonexec_feedback"):
-                nonexec.append(atom)
+                parsed = self._parse_nonexec(atom)
+                nonexec.append(parsed or atom)
             elif atom.startswith("unjustified"):
-                unjust.append(atom)
+                parsed = self._parse_unjustified(atom)
+                unjust.append(parsed or atom)
             elif atom.startswith("open_commitment_frame"):
-                open_frames.append(atom)
+                parsed = self._parse_open_frame(atom)
+                open_frames.append(parsed or atom)
             elif atom.startswith("conflict"):
                 conflicts.append(atom)
         return {
@@ -117,3 +121,33 @@ class ASPValidator:
             "open_commitment_frames": open_frames,
             "conflicts": conflicts,
         }
+
+    def _parse_nonexec(self, atom: str) -> Dict:
+        # nonexec_feedback("msg", act(subj, action(params), T))
+        m = re.match(r'nonexec_feedback\("(.*)",\s*act\(([^,]+),\s*(.+),\s*(\d+)\)\)', atom)
+        if not m:
+            return {}
+        return {
+            "message": m.group(1),
+            "subject": m.group(2),
+            "action": m.group(3),
+            "time": int(m.group(4)),
+        }
+
+    def _parse_unjustified(self, atom: str) -> Dict:
+        # unjustified(Subj, Fluent, Intention, T)
+        m = re.match(r'unjustified\(([^,]+),\s*([^,]+),\s*([^,]+),\s*(\d+)\)', atom)
+        if not m:
+            return {}
+        return {
+            "subject": m.group(1),
+            "fluent": m.group(2),
+            "intention": m.group(3),
+            "time": int(m.group(4)),
+        }
+
+    def _parse_open_frame(self, atom: str) -> Dict:
+        m = re.match(r'open_commitment_frame\(([^,]+),\s*([^)]+)\)', atom)
+        if not m:
+            return {}
+        return {"subject": m.group(1), "intention": m.group(2)}
