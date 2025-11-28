@@ -21,9 +21,8 @@ class OpenAIClient:
     ):
         self.model = model
         self.temperature = temperature
-        self.max_tokens = max_tokens
-        # OpenAI SDK uses max_completion_tokens
-        self.max_output_tokens = max_output_tokens
+        # OpenAI newer models expect max_completion_tokens; fall back to max_tokens if provided
+        self.max_completion_tokens = max_output_tokens or max_tokens
         key = api_key or os.getenv("OPENAI_API_KEY", "")
         if not key:
             raise ValueError("OPENAI_API_KEY not set")
@@ -37,7 +36,7 @@ class OpenAIClient:
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=self.temperature,
-                max_tokens=self.max_output_tokens or self.max_tokens,
+                max_completion_tokens=self.max_completion_tokens,
                 stream=False,
             )
             elapsed = time.time() - start
