@@ -19,7 +19,12 @@ class PromptGenerator:
         instance_dir: used for Aladdin to append instance-specific facts (roles, loyalty).
         """
         path = base_dir / self.domain / self.asp_version / "prompt.txt"
-        prompt_text = path.read_text()
+        if not path.exists():
+            # Fallback: use base prompt if specific version missing (e.g., western/original)
+            fallback = base_dir / self.domain / "base" / "prompt.txt"
+            prompt_text = fallback.read_text()
+        else:
+            prompt_text = path.read_text()
 
         if self.domain == "aladdin" and instance_dir is not None:
             roles, loyals = self._parse_aladdin_instance(instance_dir / "instance.lp")
