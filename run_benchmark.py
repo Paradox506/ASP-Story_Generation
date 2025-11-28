@@ -4,6 +4,7 @@ import json
 from typing import List, Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from benchmark.experiment_runner import ExperimentRunner
 from benchmark.config_loader import load_combined_config, to_experiment_config
@@ -96,7 +97,7 @@ def main():
         run_id_base = Path(output_dir).name
         # if output_dir is default "results", append timestamp to avoid clashes
         if run_id_base == "results":
-            run_id_base = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%Z")
+            run_id_base = datetime.now(ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d_%H-%M-%S_%Z")
 
     results: List[Dict[str, Any]] = []
     tasks = [(idx, m, inst) for idx, (m, inst) in enumerate([(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)])]
