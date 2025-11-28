@@ -57,13 +57,14 @@ class ExperimentRunner:
                     "error": llm_result.get("error"),
                     "run_id": run_id,
                     "metadata": self._metadata(),
+                    "llm_timing": llm_result,
                 }
                 self._persist_result(result, run_id, prompt, response_text=None, parse=None, asp=None)
                 return result
             response_text = llm_result["content"]
             timing = llm_result
         else:
-            timing = {"elapsed": None}
+            timing = {"elapsed": None, "prompt_tokens": None, "completion_tokens": None}
 
         parse_result = self.parser.parse(response_text)
         if not parse_result.get("success"):
@@ -137,7 +138,10 @@ class ExperimentRunner:
 
         log_path = self.output_dir / "benchmark.log"
         with open(log_path, "a") as f:
+            timing = result.get("llm_timing", {}) or {}
             f.write(
                 f"{run_id} domain={self.domain} asp={self.asp_version} model={self.model} "
-                f"instance={instance_name} stage={result.get('stage')} success={result.get('success')}\n"
+                f"instance={instance_name} stage={result.get('stage')} success={result.get('success')} "
+                f"elapsed={timing.get('elapsed')} prompt_tokens={timing.get('prompt_tokens')} "
+                f"completion_tokens={timing.get('completion_tokens')}\n"
             )
