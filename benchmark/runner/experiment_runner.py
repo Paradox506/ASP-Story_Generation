@@ -6,7 +6,7 @@ import json
 import os
 
 from benchmark.asp.validator import ASPValidator
-from benchmark.llm_provider.openrouter_client import OpenRouterClient
+from benchmark.llm_clients.openrouter_client import OpenRouterClient
 from benchmark.llm_post_processing.plan_parser import get_plan_parser
 from benchmark.prompts.prompt_generator import get_prompt_generator
 from benchmark.config.config_utils import load_api_key
