@@ -146,11 +146,20 @@ class ExperimentRunner:
             "llm_raw": response_text,
             "parse": parse_result,
             "asp": asp_result,
+            "clingo_stdout": self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
             "run_id": run_id,
             "metadata": self._metadata(),
             "evaluation": evaluation,
         }
-        self._persist_result(result, run_id, prompt, llm_raw=response_text, parse=parse_result, asp=asp_result)
+        self._persist_result(
+            result,
+            run_id,
+            prompt,
+            llm_raw=response_text,
+            parse=parse_result,
+            asp=asp_result,
+            raw_clingo=self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
+        )
         return result
 
     def _metadata(self) -> Dict:
@@ -174,6 +183,7 @@ class ExperimentRunner:
         llm_raw: Optional[str],
         parse: Optional[Dict],
         asp: Optional[Dict],
+        raw_clingo: Optional[str] = None,
     ) -> None:
-        self.writer.write(run_id, result, prompt, llm_raw, parse, asp)
+        self.writer.write(run_id, result, prompt, llm_raw, parse, asp, raw_clingo=raw_clingo)
         self.writer.append_log(run_id, result)

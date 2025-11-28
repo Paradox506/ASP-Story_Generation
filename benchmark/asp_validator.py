@@ -104,6 +104,8 @@ class ASPValidator:
             "open_commitment_frames": [],
             "conflicts": [],
         }
+        # stash raw stdout for persistence
+        self.last_stdout = proc.stdout
 
         try:
             data = json.loads(proc.stdout)
