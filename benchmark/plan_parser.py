@@ -39,6 +39,21 @@ class PlanParser:
             self._load_symbols("place") or self._load_symbols("location")
         )
         self.valid_objects = self._load_symbols("object")
+        self.aliases = self._build_aliases()
+
+    def _build_aliases(self) -> Dict[str, str]:
+        """
+        Domain-specific alias map to tolerate descriptive prefixes from LLM outputs.
+        Currently only used for Aladdin to strip role descriptors.
+        """
+        aliases: Dict[str, str] = {}
+        if self.domain == "aladdin":
+            prefixes = ["king ", "princess ", "knight ", "dragon ", "lamp spirit "]
+            all_chars = self.valid_characters
+            for ch in all_chars:
+                for p in prefixes:
+                    aliases[p + ch] = ch
+        return aliases
 
     def _load_symbols(self, predicate: str) -> Set[str]:
         # Combine domain facts and instance facts
@@ -94,7 +109,7 @@ class PlanParser:
             if f not in action:
                 return {"error_type": "missing_required_field", "message": f"Missing {f}"}
         # subject
-        subj = action["subject"]
+        subj = self._normalize_name(action["subject"])
         if self.valid_characters and subj not in self.valid_characters:
             return {"error_type": "invalid_character", "message": f"Unknown {subj}"}
         # actionId
@@ -113,14 +128,30 @@ class PlanParser:
             }
         # value checks
         if self.domain in ("aladdin", "secret_agent"):
-            for p in params:
+            norm_params = [self._normalize_name(p) for p in params]
+            action["parameters"] = norm_params
+            for p in norm_params:
                 if p in self.valid_characters or p in self.valid_objects or p in self.valid_places:
                     continue
         if self.domain == "western":
-            for p in params:
+            norm_params = [self._normalize_name(p) for p in params]
+            action["parameters"] = norm_params
+            for p in norm_params:
                 if p in self.valid_characters or p in self.valid_places:
                     continue
         return True
+
+    def _normalize_name(self, name: str) -> str:
+        """
+        Normalize entity names by lowering, stripping, and applying alias map.
+        """
+        if not isinstance(name, str):
+            return name
+        raw = name.strip()
+        lowered = raw.lower()
+        if lowered in self.aliases:
+            return self.aliases[lowered]
+        return lowered
 
     def _extract_json(self, text: str) -> str:
         # Try direct
