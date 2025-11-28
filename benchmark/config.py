@@ -19,7 +19,10 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     },
     "asp": {"clingo_path": "clingo"},
     "openrouter": {"api_key": ""},
-    "llm": {"max_output_tokens": None},
+    "llm": {
+        "max_output_tokens": None,
+        "model_max_output_tokens": {},
+    },
 }
 
 
@@ -46,8 +49,14 @@ def load_api_key(config_path: Optional[Path] = None) -> str:
 def load_config(path: Optional[Path]) -> Dict[str, Any]:
     """
     Load YAML config and merge onto DEFAULT_CONFIG. Missing file falls back to defaults.
+    Additionally, if config.default.yaml exists in repo root, it is merged before user config.
     """
     cfg = DEFAULT_CONFIG.copy()
+    # optional repo-level default file
+    repo_default = Path(__file__).resolve().parent.parent / "config.default.yaml"
+    if repo_default.exists():
+        base_cfg = yaml.safe_load(repo_default.read_text()) or {}
+        cfg = _deep_merge(cfg, base_cfg)
     if path and path.exists():
         user_cfg = yaml.safe_load(path.read_text()) or {}
         cfg = _deep_merge(cfg, user_cfg)

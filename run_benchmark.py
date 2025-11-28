@@ -68,7 +68,10 @@ def main():
     output_dir = Path(args.output_dir or cfg["experiment"]["output_dir"])
     runs_per_instance = args.runs or cfg["experiment"].get("runs_per_instance", 1)
     workers = args.workers or cfg["experiment"].get("workers", 1)
+    model_max_map = cfg.get("llm", {}).get("model_max_output_tokens", {}) or {}
     max_output_tokens = args.max_output_tokens or cfg.get("llm", {}).get("max_output_tokens")
+    if max_output_tokens is None:
+        max_output_tokens = model_max_map.get(model)
 
     base = Path(__file__).parent
     if args.instances:
