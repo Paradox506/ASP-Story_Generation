@@ -61,6 +61,7 @@ class ExperimentRunner:
                     "run_id": run_id,
                     "metadata": self._metadata(),
                     "llm_timing": llm_result,
+                    "llm_raw": llm_result.get("content", "") or llm_result.get("error", ""),
                 }
                 self._persist_result(result, run_id, prompt, response_text=None, parse=None, asp=None)
                 return result

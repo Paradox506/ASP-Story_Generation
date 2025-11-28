@@ -25,7 +25,7 @@ class OpenRouterClient:
 
     def generate(self, prompt: str) -> Dict:
         if not self.api_key:
-            return {"success": False, "error": "OPENROUTER_API_KEY not set"}
+            return {"success": False, "error": "OPENROUTER_API_KEY not set", "content": ""}
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -52,4 +52,12 @@ class OpenRouterClient:
                 "elapsed": elapsed,
             }
         except Exception as e:
+            # Capture response text if available for debugging
+            elapsed = time.time() - start
+            err_text = ""
+            if "resp" in locals():
+                try:
+                    err_text = resp.text
+                except Exception:
+                    err_text = ""
             return {"success": False, "error": str(e), "elapsed": time.time() - start}
