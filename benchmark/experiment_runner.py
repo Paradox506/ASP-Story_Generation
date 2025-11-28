@@ -45,12 +45,21 @@ class ExperimentRunner:
 
     def run(self, response_text: Optional[str] = None) -> Dict:
         prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
+        run_id = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
         if response_text is None:
             api_key = load_api_key(self.config_path)
             client = OpenRouterClient(self.model, api_key=api_key)
             llm_result = client.generate(prompt)
             if not llm_result.get("success"):
-                return {"stage": "llm", "success": False, "error": llm_result.get("error")}
+                result = {
+                    "stage": "llm",
+                    "success": False,
+                    "error": llm_result.get("error"),
+                    "run_id": run_id,
+                    "metadata": self._metadata(),
+                }
+                self._persist_result(result, run_id, prompt, response_text=None, parse=None, asp=None)
+                return result
             response_text = llm_result["content"]
             timing = llm_result
         else:
@@ -58,7 +67,16 @@ class ExperimentRunner:
 
         parse_result = self.parser.parse(response_text)
         if not parse_result.get("success"):
-            return {"stage": "parse", "success": False, "parse": parse_result, "llm_timing": timing}
+            result = {
+                "stage": "parse",
+                "success": False,
+                "parse": parse_result,
+                "llm_timing": timing,
+                "run_id": run_id,
+                "metadata": self._metadata(),
+            }
+            self._persist_result(result, run_id, prompt, response_text, parse_result, asp=None)
+            return result
 
         asp_result = self.validator.validate_plan(parse_result["actions"], maxstep=self.maxstep)
 
@@ -70,16 +88,34 @@ class ExperimentRunner:
             "llm_raw": response_text,
             "parse": parse_result,
             "asp": asp_result,
+            "run_id": run_id,
+            "metadata": self._metadata(),
         }
-        self._persist_result(result)
+        self._persist_result(result, run_id, prompt, response_text, parse_result, asp_result)
         return result
 
-    def _persist_result(self, result: Dict) -> None:
+    def _metadata(self) -> Dict:
+        return {
+            "domain": self.domain,
+            "asp_version": self.asp_version,
+            "model": self.model,
+            "instance": self.instance_dir.name,
+            "maxstep": self.maxstep,
+        }
+
+    def _persist_result(
+        self,
+        result: Dict,
+        run_id: str,
+        prompt: Optional[str],
+        llm_raw: Optional[str],
+        parse: Optional[Dict],
+        asp: Optional[Dict],
+    ) -> None:
         """
         Save result JSON and a short log line. Directory layout:
         results/{domain}/{asp_version}/{model}/{instance}/{run_id}/result.json
         """
-        run_id = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
         instance_name = self.instance_dir.name
         dest_dir = (
             self.output_dir
@@ -91,10 +127,13 @@ class ExperimentRunner:
         )
         os.makedirs(dest_dir, exist_ok=True)
         (dest_dir / "result.json").write_text(json.dumps(result, indent=2))
-        (dest_dir / "prompt.txt").write_text(result.get("prompt", ""))
-        (dest_dir / "llm_raw.txt").write_text(result.get("llm_raw", ""))
-        (dest_dir / "parse.json").write_text(json.dumps(result.get("parse", {}), indent=2))
-        (dest_dir / "asp.json").write_text(json.dumps(result.get("asp", {}), indent=2))
+        (dest_dir / "prompt.txt").write_text(prompt or "")
+        if llm_raw is not None:
+            (dest_dir / "llm_raw.txt").write_text(llm_raw)
+        if parse is not None:
+            (dest_dir / "parse.json").write_text(json.dumps(parse, indent=2))
+        if asp is not None:
+            (dest_dir / "asp.json").write_text(json.dumps(asp, indent=2))
 
         log_path = self.output_dir / "benchmark.log"
         with open(log_path, "a") as f:
