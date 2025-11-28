@@ -33,6 +33,10 @@ class PromptGenerator:
                 prompt_text += "Loyalty relations:\n"
                 for a, b in loyals:
                     prompt_text += f"- {a} is loyal to {b}\n"
+        elif self.domain == "western" and instance_dir is not None:
+            intro = self._read_optional(instance_dir / "intro.txt")
+            if intro:
+                prompt_text += "\n\nInstance intro:\n" + intro
         return prompt_text
 
     def _parse_aladdin_instance(self, path: Path) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
@@ -52,3 +56,6 @@ class PromptGenerator:
             if m:
                 loyals.append((m.group(1), m.group(2)))
         return roles, loyals
+
+    def _read_optional(self, path: Path) -> str:
+        return path.read_text() if path.exists() else ""

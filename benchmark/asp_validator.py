@@ -114,7 +114,8 @@ class ASPValidator:
                 parsed = self._parse_open_frame(atom)
                 open_frames.append(parsed or atom)
             elif atom.startswith("conflict"):
-                conflicts.append(atom)
+                parsed = self._parse_conflict(atom)
+                conflicts.append(parsed or atom)
         return {
             "nonexec_feedback": nonexec,
             "unjustified": unjust,
@@ -151,3 +152,15 @@ class ASPValidator:
         if not m:
             return {}
         return {"subject": m.group(1), "intention": m.group(2)}
+
+    def _parse_conflict(self, atom: str) -> Dict:
+        # conflict(Threatener, Threatened, Link, Action)
+        m = re.match(r'conflict\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)', atom)
+        if not m:
+            return {}
+        return {
+            "threatener": m.group(1),
+            "threatened": m.group(2),
+            "link": m.group(3),
+            "action": m.group(4),
+        }
