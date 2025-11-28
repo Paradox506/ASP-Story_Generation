@@ -8,6 +8,35 @@ from benchmark.experiment_runner import ExperimentRunner
 from benchmark.config import load_config
 
 
+def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    total = len(results)
+    completed = sum(1 for r in results if r.get("stage") == "complete")
+    sat = sum(
+        1
+        for r in results
+        if r.get("stage") == "complete" and r.get("asp", {}).get("satisfiable", False)
+    )
+    timing_vals = [r.get("llm_timing", {}) for r in results if r.get("llm_timing")]
+    prompt_tokens = [t.get("prompt_tokens") for t in timing_vals if t.get("prompt_tokens") is not None]
+    completion_tokens = [
+        t.get("completion_tokens") for t in timing_vals if t.get("completion_tokens") is not None
+    ]
+    elapsed = [t.get("elapsed") for t in timing_vals if t.get("elapsed") is not None]
+
+    def _avg(xs: List[float]) -> float:
+        return sum(xs) / len(xs) if xs else 0.0
+
+    return {
+        "total_runs": total,
+        "completed_runs": completed,
+        "sat_runs": sat,
+        "success_rate": sat / total if total else 0.0,
+        "avg_prompt_tokens": _avg(prompt_tokens),
+        "avg_completion_tokens": _avg(completion_tokens),
+        "avg_elapsed": _avg(elapsed),
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description="Minimal one-off benchmark runner")
     parser.add_argument("--config", default="config.yaml", help="Config YAML path")
@@ -90,32 +119,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
-    total = len(results)
-    completed = sum(1 for r in results if r.get("stage") == "complete")
-    sat = sum(
-        1
-        for r in results
-        if r.get("stage") == "complete" and r.get("asp", {}).get("satisfiable", False)
-    )
-    timing_vals = [r.get("llm_timing", {}) for r in results if r.get("llm_timing")]
-    prompt_tokens = [t.get("prompt_tokens") for t in timing_vals if t.get("prompt_tokens") is not None]
-    completion_tokens = [
-        t.get("completion_tokens") for t in timing_vals if t.get("completion_tokens") is not None
-    ]
-    elapsed = [t.get("elapsed") for t in timing_vals if t.get("elapsed") is not None]
-
-    def _avg(xs: List[float]) -> float:
-        return sum(xs) / len(xs) if xs else 0.0
-
-    return {
-        "total_runs": total,
-        "completed_runs": completed,
-        "sat_runs": sat,
-        "success_rate": sat / total if total else 0.0,
-        "avg_prompt_tokens": _avg(prompt_tokens),
-        "avg_completion_tokens": _avg(completion_tokens),
-        "avg_elapsed": _avg(elapsed),
-    }
