@@ -33,6 +33,7 @@ class ASPValidator:
         self.clingo_path = clingo_path
         self.use_clingo_api = use_clingo_api and clingo is not None
         self.mapper = ActionMapper(domain)
+        self.last_stdout: Optional[str] = None
 
     def _collect_files(self) -> List[str]:
         files: List[str] = []
@@ -141,6 +142,8 @@ class ASPValidator:
         if models:
             result["satisfiable"] = True
             result.update(self._extract_symbols(models[0]))
+        # store a minimal raw representation for persistence
+        self.last_stdout = json.dumps({"models": models, "satisfiable": result["satisfiable"]})
         return result
 
     def _extract_symbols(self, values: List[str]) -> Dict:
