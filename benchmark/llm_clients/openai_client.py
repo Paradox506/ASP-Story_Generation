@@ -20,7 +20,8 @@ class OpenAIClient:
         max_output_tokens: Optional[int] = None,
     ):
         self.model = model
-        self.temperature = temperature
+        # Some models (e.g., o1) do not support temperature; set to None to skip sending.
+        self.temperature = None if "o1" in model else temperature
         # OpenAI newer models expect max_completion_tokens; fall back to max_tokens if provided
         self.max_completion_tokens = max_output_tokens or max_tokens
         key = api_key or os.getenv("OPENAI_API_KEY", "")
@@ -35,7 +36,7 @@ class OpenAIClient:
             resp = self.client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=self.temperature,
+                **({"temperature": self.temperature} if self.temperature is not None else {}),
                 max_completion_tokens=self.max_completion_tokens,
                 stream=False,
             )
