@@ -19,12 +19,25 @@ class PromptGenerator:
         instance_dir: used for Aladdin to append instance-specific facts (roles, loyalty).
         """
         path = base_dir / self.domain / self.asp_version / "prompt.txt"
-        if not path.exists():
-            # Fallback: use base prompt if specific version missing (e.g., western/original)
-            fallback = base_dir / self.domain / "base" / "prompt.txt"
-            prompt_text = fallback.read_text()
+        use_base_template = False
+        loyalty_text = ""
+
+        if self.domain == "aladdin" and instance_dir is not None:
+            loyalty_path = instance_dir / "loyalty.txt"
+            if loyalty_path.exists():
+                loyalty_text = loyalty_path.read_text().strip()
+                use_base_template = True
+
+        if use_base_template:
+            prompt_text = (base_dir / self.domain / "base" / "prompt.txt").read_text()
+            if loyalty_text:
+                prompt_text = self._insert_loyalty(prompt_text, loyalty_text)
         else:
-            prompt_text = path.read_text()
+            if not path.exists():
+                fallback = base_dir / self.domain / "base" / "prompt.txt"
+                prompt_text = fallback.read_text()
+            else:
+                prompt_text = path.read_text()
 
         if self.domain == "aladdin" and instance_dir is not None:
             prompt_text = self._augment_aladdin(prompt_text, instance_dir)
@@ -47,6 +60,15 @@ class PromptGenerator:
             for a, b in loyals:
                 prompt_text += f"- {a} is loyal to {b}\n"
         return prompt_text
+
+    def _insert_loyalty(self, prompt_text: str, loyalty_text: str) -> str:
+        """
+        Insert loyalty description after the second paragraph (first blank line).
+        """
+        parts = prompt_text.split("\n\n")
+        if len(parts) >= 2:
+            return "\n\n".join([parts[0], parts[1], "Loyalty relations:\n" + loyalty_text] + parts[2:])
+        return prompt_text + "\n\nLoyalty relations:\n" + loyalty_text
 
     def _augment_western(self, prompt_text: str, instance_dir: Path) -> str:
         intro = self._read_optional(instance_dir / "intro.txt")
