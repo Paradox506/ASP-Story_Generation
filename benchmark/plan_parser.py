@@ -113,7 +113,12 @@ class PlanParser:
         if self.valid_characters and subj not in self.valid_characters:
             return {"error_type": "invalid_character", "message": f"Unknown {subj}"}
         # actionId
-        aid = action["actionId"]
+        aid_raw = action["actionId"]
+        try:
+            aid = int(aid_raw)
+            action["actionId"] = aid
+        except Exception:
+            return {"error_type": "invalid_action_id", "message": f"Invalid actionId {aid_raw}"}
         if aid not in self.mapper._schemas:
             return {"error_type": "invalid_action_id", "message": f"Invalid id {aid}"}
         # parameters
