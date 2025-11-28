@@ -8,7 +8,7 @@ import os
 from benchmark.asp.validator import ASPValidator
 from benchmark.llm_clients.openrouter_client import OpenRouterClient
 from benchmark.llm_post_processing.plan_parser import get_plan_parser
-from benchmark.prompts.prompt_generator import get_prompt_generator
+from benchmark.prompts.prompt_builder import get_prompt_builder
 from benchmark.config.config_utils import load_api_key
 from benchmark.io.artifact_writer import ArtifactWriter
 from benchmark.config.config_loader import ExperimentConfig, LlmConfig
@@ -59,7 +59,7 @@ class ExperimentRunner:
             model,
             instance_dir.name,
         )
-        self.prompt_gen = get_prompt_generator(domain, asp_version)
+        self.prompt_gen = get_prompt_builder(domain, asp_version)
         self.parser = get_plan_parser(domain, domain_dir, instance_dir)
         self.validator = ASPValidator(domain, domain_dir, instance_dir, clingo_path=clingo_path)
         self.evaluator = None
