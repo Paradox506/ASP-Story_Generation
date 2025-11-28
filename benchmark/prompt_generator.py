@@ -31,47 +31,19 @@ class AladdinPromptGenerator(BasePromptGenerator):
                 loyalty_text = loyalty_path.read_text().strip()
 
         prompt_text = super().load_prompt(base_dir, instance_dir)
-        if loyalty_text:
-            prompt_text = self.insert_loyalty(prompt_text, loyalty_text)
-
         if instance_dir:
-            prompt_text = self.augment_prompt(prompt_text, base_dir, instance_dir, loyalty_text=loyalty_text)
+            prompt_text = self.augment_prompt(prompt_text, base_dir, instance_dir, loyalty_text)
         return prompt_text
 
     def augment_prompt(self, prompt_text: str, base_dir: Path, instance_dir: Path, loyalty_text: str = "") -> str:
-        roles, loyals = self.parse_instance(instance_dir / "instance.lp", loyalty_text)
-        if roles or loyals:
-            prompt_text += "\n\n"
-        if roles:
-            prompt_text += "Roles for this instance:\n"
-            for name, desc in roles:
-                prompt_text += f"- {name}: {desc}\n"
+        loyals = loyals_from_text(loyalty_text)
         if loyals:
-            prompt_text += "Loyalty relations:\n"
+            prompt_text += "\n\nLoyalty relations:\n"
             for a, b in loyals:
                 prompt_text += f"- {a} is loyal to {b}\n"
+        if loyals:
+            prompt_text = self.insert_loyalty(prompt_text, loyalty_text)
         return prompt_text
-
-    def parse_instance(self, path: Path, loyalty_text: str) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
-        roles: List[Tuple[str, str]] = []
-        loyals: List[Tuple[str, str]] = []
-        if not path.exists():
-            return roles, loyals_from_text(loyalty_text)
-        role_re = re.compile(r'role\(([^,]+),\s*"([^"]*)"\s*\)\.')
-        loyal_re = re.compile(r'attr\(is_loyal_to\(([^,]+),\s*([^)]+)\)\)\.')
-        for line in path.read_text().splitlines():
-            line = line.strip()
-            m = role_re.match(line)
-            if m:
-                roles.append((m.group(1), m.group(2)))
-                continue
-            m = loyal_re.match(line)
-            if m:
-                loyals.append((m.group(1), m.group(2)))
-        loyals.extend(loyals_from_text(loyalty_text))
-        # deduplicate
-        loyals = list(dict.fromkeys(loyals))
-        return roles, loyals
 
     def insert_loyalty(self, prompt_text: str, loyalty_text: str) -> str:
         parts = prompt_text.split("\n\n")
