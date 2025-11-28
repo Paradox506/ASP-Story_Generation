@@ -27,6 +27,7 @@ class ExperimentRunner:
         maxstep: int = 12,
         config_path: Optional[Path] = None,
         output_dir: Path = Path("results"),
+        run_id_override: Optional[str] = None,
     ):
         self.base_dir = base_dir
         self.domain = domain
@@ -37,15 +38,17 @@ class ExperimentRunner:
         self.maxstep = maxstep
         self.config_path = config_path
         self.output_dir = output_dir
+        self.run_id_override = run_id_override
 
         domain_dir = base_dir / domain / asp_version
         self.prompt_gen = PromptGenerator(domain, asp_version)
         self.parser = PlanParser(domain, domain_dir, instance_dir)
         self.validator = ASPValidator(domain, domain_dir, instance_dir, clingo_path=clingo_path)
 
-    def run(self, response_text: Optional[str] = None) -> Dict:
+    def run(self, response_text: Optional[str] = None, run_seq: int = 0) -> Dict:
         prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
-        run_id = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        base_id = self.run_id_override or datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        run_id = f"{base_id}/run_{run_seq:04d}"
         if response_text is None:
             api_key = load_api_key(self.config_path)
             client = OpenRouterClient(self.model, api_key=api_key)

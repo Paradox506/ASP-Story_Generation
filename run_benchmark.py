@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 from typing import List, Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 
 from benchmark.experiment_runner import ExperimentRunner
 from benchmark.config import load_config
@@ -81,10 +82,17 @@ def main():
     if args.response_file:
         response_text = Path(args.response_file).read_text()
 
-    results: List[Dict[str, Any]] = []
-    tasks = [(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)]
+    run_id_base = Path(args.output or output_dir).name if args.output else None
+    if not run_id_base:
+        run_id_base = Path(output_dir).name
+        # if output_dir is default "results", append timestamp to avoid clashes
+        if run_id_base == "results":
+            run_id_base = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
 
-    def run_task(model_name: str, inst_dir: Path):
+    results: List[Dict[str, Any]] = []
+    tasks = [(idx, m, inst) for idx, (m, inst) in enumerate([(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)])]
+
+    def run_task(seq: int, model_name: str, inst_dir: Path):
         runner = ExperimentRunner(
             base_dir=base,
             domain=domain,
@@ -95,17 +103,18 @@ def main():
             maxstep=maxstep,
             config_path=cfg_path,
             output_dir=output_dir,
+            run_id_override=run_id_base,
         )
-        return runner.run(response_text=response_text)
+        return runner.run(response_text=response_text, run_seq=seq)
 
     if workers and workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as ex:
-            future_map = {ex.submit(run_task, m, inst): (m, inst) for m, inst in tasks}
+            future_map = {ex.submit(run_task, seq, m, inst): (m, inst) for seq, m, inst in tasks}
             for fut in as_completed(future_map):
                 results.append(fut.result())
     else:
-        for m, inst in tasks:
-            results.append(run_task(m, inst))
+        for seq, m, inst in tasks:
+            results.append(run_task(seq, m, inst))
 
     summary = summarize_results(results)
 
