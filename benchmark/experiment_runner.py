@@ -6,7 +6,7 @@ import os
 
 from .asp_validator import ASPValidator
 from .openrouter_client import OpenRouterClient
-from .plan_parser import PlanParser
+from .plan_parser import get_plan_parser
 from .prompt_generator import PromptGenerator
 from .config import load_api_key
 from .artifact_writer import ArtifactWriter
@@ -59,7 +59,7 @@ class ExperimentRunner:
             instance_dir.name,
         )
         self.prompt_gen = PromptGenerator(domain, asp_version)
-        self.parser = PlanParser(domain, domain_dir, instance_dir)
+        self.parser = get_plan_parser(domain, domain_dir, instance_dir)
         self.validator = ASPValidator(domain, domain_dir, instance_dir, clingo_path=clingo_path)
         self.evaluator = None
         if domain == "secret_agent":
