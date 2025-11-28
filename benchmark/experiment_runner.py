@@ -63,8 +63,8 @@ class ExperimentRunner:
                     "llm_timing": llm_result,
                     "llm_raw": llm_result.get("content", "") or llm_result.get("error", ""),
                 }
-                self._persist_result(result, run_id, prompt, response_text=None, parse=None, asp=None)
-                return result
+        self._persist_result(result, run_id, prompt, llm_raw=None, parse=None, asp=None)
+        return result
             response_text = llm_result["content"]
             timing = llm_result
         else:
@@ -96,7 +96,7 @@ class ExperimentRunner:
             "run_id": run_id,
             "metadata": self._metadata(),
         }
-        self._persist_result(result, run_id, prompt, response_text, parse_result, asp_result)
+        self._persist_result(result, run_id, prompt, llm_raw=response_text, parse=parse_result, asp=asp_result)
         return result
 
     def _metadata(self) -> Dict:
