@@ -5,6 +5,14 @@ from typing import Dict, List, Optional, Set
 
 from .utils import ActionMapper
 
+# Static helper for CLI/standalone use
+def parse_plan(domain: str, domain_dir: Path, instance_dir: Path, llm_output: str) -> Dict:
+    """
+    Convenience wrapper to parse an LLM output without instantiating ExperimentRunner.
+    """
+    parser = PlanParser(domain, domain_dir, instance_dir)
+    return parser.parse(llm_output)
+
 
 def _extract_atoms(path: Path, predicate: str) -> Set[str]:
     """
