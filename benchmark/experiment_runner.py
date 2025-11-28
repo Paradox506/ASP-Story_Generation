@@ -90,8 +90,11 @@ class ExperimentRunner:
             / run_id
         )
         os.makedirs(dest_dir, exist_ok=True)
-        out_path = dest_dir / "result.json"
-        out_path.write_text(json.dumps(result, indent=2))
+        (dest_dir / "result.json").write_text(json.dumps(result, indent=2))
+        (dest_dir / "prompt.txt").write_text(result.get("prompt", ""))
+        (dest_dir / "llm_raw.txt").write_text(result.get("llm_raw", ""))
+        (dest_dir / "parse.json").write_text(json.dumps(result.get("parse", {}), indent=2))
+        (dest_dir / "asp.json").write_text(json.dumps(result.get("asp", {}), indent=2))
 
         log_path = self.output_dir / "benchmark.log"
         with open(log_path, "a") as f:
