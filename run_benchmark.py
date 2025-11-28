@@ -56,6 +56,7 @@ def main():
     parser.add_argument("--workers", type=int, help="Number of parallel workers (default serial)")
     parser.add_argument("--max-tokens", type=int, help="Override LLM max_tokens")
     parser.add_argument("--max-output-tokens", type=int, help="Override LLM max_output_tokens if supported")
+    parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic"], help="LLM provider")
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
@@ -74,6 +75,7 @@ def main():
         models = [model] if args.model else llm_cfg.models
         runs_per_instance = args.runs or exp_cfg.runs_per_instance
     clingo_path = args.clingo or cfg["asp"]["clingo_path"]
+    provider = args.provider or llm_cfg.provider
     maxstep = args.maxstep or exp_cfg.maxstep
     output_dir = Path(args.output_dir or exp_cfg.output_dir)
     workers = args.workers or exp_cfg.workers
@@ -129,6 +131,7 @@ def main():
             asp_version=asp_version,
             instance_dir=inst_dir,
             model=model_name,
+            provider=provider,
             clingo_path=clingo_path,
             maxstep=maxstep,
             config_path=cfg_path,

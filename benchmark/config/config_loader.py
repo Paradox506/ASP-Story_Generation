@@ -7,6 +7,7 @@ import yaml
 
 @dataclass
 class LlmConfig:
+    provider: str
     models: List[str]
     max_tokens: Optional[int]
     max_output_tokens: Optional[int]
@@ -50,6 +51,7 @@ def to_experiment_config(cfg: Dict) -> (ExperimentConfig, LlmConfig):
         workers=exp.get("workers", 1),
     )
     llm = LlmConfig(
+        provider=llm_cfg.get("provider", "openrouter"),
         models=exp.get("models", ["openai/gpt-4o"]),
         max_tokens=llm_cfg.get("max_tokens"),
         max_output_tokens=llm_cfg.get("max_output_tokens"),

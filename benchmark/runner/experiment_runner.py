@@ -26,6 +26,7 @@ class ExperimentRunner:
         asp_version: str,
         instance_dir: Path,
         model: str,
+        provider: str = "openrouter",
         clingo_path: str = "clingo",
         maxstep: int = 12,
         config_path: Optional[Path] = None,
@@ -41,6 +42,7 @@ class ExperimentRunner:
         self.asp_version = asp_version
         self.instance_dir = instance_dir
         self.model = model
+        self.provider = provider
         self.clingo_path = clingo_path
         self.maxstep = maxstep
         self.config_path = config_path
@@ -93,13 +95,8 @@ class ExperimentRunner:
             base_id = f"{base_id}_offline"
         run_id = f"{base_id}/run_{run_seq:04d}"
         if response_text is None:
-            api_key = load_api_key(self.config_path)
-            client = OpenRouterClient(
-                self.model,
-                api_key=api_key,
-                max_tokens=self.max_tokens,
-                max_output_tokens=self.max_output_tokens,
-            )
+            api_key = load_api_key(self.config_path) if self.provider == "openrouter" else None
+            client = self._make_client(api_key)
             llm_result = client.generate(prompt)
             if not llm_result.get("success"):
                 result = {
@@ -178,6 +175,31 @@ class ExperimentRunner:
             constraints=constraints_text,
         )
         return result
+
+    def _make_client(self, api_key: Optional[str]):
+        if self.provider == "openrouter":
+            from benchmark.llm_clients.openrouter_client import OpenRouterClient
+
+            return OpenRouterClient(
+                self.model,
+                api_key=api_key,
+                max_tokens=self.max_tokens,
+                max_output_tokens=self.max_output_tokens,
+            )
+        if self.provider == "openai":
+            from benchmark.llm_clients.openai_client import OpenAIClient
+
+            return OpenAIClient(
+                self.model,
+                api_key=api_key,
+                max_tokens=self.max_tokens,
+                max_output_tokens=self.max_output_tokens,
+            )
+        if self.provider == "anthropic":
+            from benchmark.llm_clients.anthropic_client import AnthropicClient
+
+            return AnthropicClient()
+        raise ValueError(f"Unsupported provider {self.provider}")
 
     def _metadata(self) -> Dict:
         return {
