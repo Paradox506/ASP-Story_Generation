@@ -134,9 +134,9 @@ class PlanParser:
         if not isinstance(params, list):
             return {"error_type": "invalid_parameters", "message": "Parameters must be list"}
         schema = self.mapper.schema(aid)
-        # Attempt domain-specific completion for Aladdin
-        if self.domain == "aladdin" and len(params) < schema.arity:
-            filled = self._maybe_fill_aladdin_params(aid, params, subj)
+        # Attempt domain-specific completion
+        if len(params) < schema.arity:
+            filled = self._maybe_fill_params(aid, params, subj)
             if filled != params:
                 action["_filled_params"] = True
             params = filled
@@ -172,6 +172,15 @@ class PlanParser:
         if lowered in self.aliases:
             return self.aliases[lowered]
         return lowered
+
+    def _maybe_fill_params(self, aid: int, params: List[str], subj: str) -> List[str]:
+        """
+        Dispatch to domain-specific fillers.
+        """
+        if self.domain == "aladdin":
+            return self._maybe_fill_aladdin_params(aid, params, subj)
+        # Future domains can add fillers here.
+        return params
 
     def _maybe_fill_aladdin_params(self, aid: int, params: List[str], subj: str) -> List[str]:
         """
