@@ -56,6 +56,13 @@ class ExperimentRunner:
                 self.evaluator = CausalEvaluator()
             except Exception:
                 self.evaluator = None
+        elif domain == "western":
+            try:
+                from .evaluators.conflict_evaluator import ConflictEvaluator
+
+                self.evaluator = ConflictEvaluator()
+            except Exception:
+                self.evaluator = None
 
     def run(self, response_text: Optional[str] = None, run_seq: int = 0) -> Dict:
         prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
@@ -104,7 +111,12 @@ class ExperimentRunner:
 
         evaluation = None
         if self.evaluator:
-            evaluation = self.evaluator.evaluate(asp_result, parse_result)
+            expected_conflicts = 0
+            if self.domain == "western":
+                expected_conflicts = self._expected_conflicts()
+                evaluation = self.evaluator.evaluate(asp_result, parse_result, expected_conflicts=expected_conflicts)
+            else:
+                evaluation = self.evaluator.evaluate(asp_result, parse_result)
 
         result = {
             "stage": "complete",
@@ -129,6 +141,10 @@ class ExperimentRunner:
             "instance": self.instance_dir.name,
             "maxstep": self.maxstep,
         }
+
+    def _expected_conflicts(self) -> int:
+        # Placeholder: could read from config/goal if available
+        return 0
 
     def _persist_result(
         self,
@@ -161,6 +177,8 @@ class ExperimentRunner:
             (dest_dir / "parse.json").write_text(json.dumps(parse, indent=2))
         if asp is not None:
             (dest_dir / "asp.json").write_text(json.dumps(asp, indent=2))
+        if result.get("evaluation") is not None:
+            (dest_dir / "evaluation.json").write_text(json.dumps(result["evaluation"], indent=2))
 
         log_path = self.output_dir / "benchmark.log"
         with open(log_path, "a") as f:
