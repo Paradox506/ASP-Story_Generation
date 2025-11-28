@@ -95,7 +95,7 @@ class ExperimentRunner:
             base_id = f"{base_id}_offline"
         run_id = f"{base_id}/run_{run_seq:04d}"
         if response_text is None:
-            api_key = load_api_key(self.config_path) if self.provider == "openrouter" else None
+            api_key = load_api_key(self.config_path, provider=self.provider)
             client = self._make_client(api_key)
             llm_result = client.generate(prompt)
             if not llm_result.get("success"):

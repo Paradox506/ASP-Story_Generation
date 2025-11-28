@@ -21,6 +21,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     },
     "asp": {"clingo_path": "clingo"},
     "openrouter": {"api_key": ""},
+    "openai": {"api_key": ""},
     "llm": {
         "provider": "openrouter",
         "max_tokens": None,
@@ -55,24 +56,32 @@ class ExperimentConfig:
     llm: LlmConfig
 
 
-def load_api_key(config_path: Optional[Path] = None) -> str:
+def load_api_key(config_path: Optional[Path] = None, provider: str = "openrouter") -> str:
     """
-    Load OPENROUTER_API_KEY from environment or optional YAML file.
-    YAML format example:
-    openrouter:
-      api_key: "sk-xxxx"
+    Load API key for the given provider from env or YAML config.
+
+    Env vars:
+      OPENROUTER_API_KEY or OPENAI_API_KEY depending on provider.
+
+    YAML example:
+      openrouter:
+        api_key: "sk-xxxx"
+      openai:
+        api_key: "sk-xxxx"
     """
-    env_key = os.getenv("OPENROUTER_API_KEY")
+    env_var = "OPENROUTER_API_KEY" if provider == "openrouter" else "OPENAI_API_KEY"
+    env_key = os.getenv(env_var)
     if env_key:
         return env_key
     data = {}
     if config_path and config_path.exists():
         data = yaml.safe_load(config_path.read_text()) or {}
-    if not data:
+    # fallback to ~/.openrouter.yaml for legacy
+    if not data and provider == "openrouter":
         default_path = Path.home() / ".openrouter.yaml"
         if default_path.exists():
             data = yaml.safe_load(default_path.read_text()) or {}
-    return (data.get("openrouter", {}) or {}).get("api_key", "") or ""
+    return (data.get(provider, {}) or {}).get("api_key", "") or ""
 
 
 def load_config(path: Optional[Path]) -> Dict[str, Any]:
