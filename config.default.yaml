@@ -17,6 +17,8 @@ openrouter:
   api_key: ""
 
 llm:
+  max_tokens: null
+  model_max_tokens: {}
   max_output_tokens: null
   model_max_output_tokens:
     openai/o1: 13000

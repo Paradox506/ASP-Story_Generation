@@ -28,6 +28,7 @@ class ExperimentRunner:
         config_path: Optional[Path] = None,
         output_dir: Path = Path("results"),
         run_id_override: Optional[str] = None,
+        max_tokens: Optional[int] = None,
         max_output_tokens: Optional[int] = None,
     ):
         self.base_dir = base_dir
@@ -40,6 +41,7 @@ class ExperimentRunner:
         self.config_path = config_path
         self.output_dir = output_dir
         self.run_id_override = run_id_override
+        self.max_tokens = max_tokens
         self.max_output_tokens = max_output_tokens
 
         domain_dir = base_dir / domain / asp_version
@@ -54,7 +56,10 @@ class ExperimentRunner:
         if response_text is None:
             api_key = load_api_key(self.config_path)
             client = OpenRouterClient(
-                self.model, api_key=api_key, max_output_tokens=self.max_output_tokens
+                self.model,
+                api_key=api_key,
+                max_tokens=self.max_tokens,
+                max_output_tokens=self.max_output_tokens,
             )
             llm_result = client.generate(prompt)
             if not llm_result.get("success"):

@@ -15,7 +15,7 @@ class OpenRouterClient:
         model: str,
         api_key: str | None = None,
         temperature: float = 0.7,
-        max_tokens: int = 2000,
+        max_tokens: int | None = None,
         max_output_tokens: int | None = None,
     ):
         self.model = model
@@ -36,9 +36,10 @@ class OpenRouterClient:
             "model": self.model,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
             "stream": False,
         }
+        if self.max_tokens is not None:
+            payload["max_tokens"] = self.max_tokens
         if self.max_output_tokens is not None:
             payload["max_output_tokens"] = self.max_output_tokens
         start = time.time()

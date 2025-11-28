@@ -20,6 +20,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "asp": {"clingo_path": "clingo"},
     "openrouter": {"api_key": ""},
     "llm": {
+        "max_tokens": None,
+        "model_max_tokens": {},
         "max_output_tokens": None,
         "model_max_output_tokens": {},
     },

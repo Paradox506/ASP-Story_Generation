@@ -53,6 +53,7 @@ def main():
     parser.add_argument("--runs", type=int, help="Runs per instance per model")
     parser.add_argument("--instances", nargs="+", help="Explicit instance directories (relative or absolute)")
     parser.add_argument("--workers", type=int, help="Number of parallel workers (default serial)")
+    parser.add_argument("--max-tokens", type=int, help="Override LLM max_tokens")
     parser.add_argument("--max-output-tokens", type=int, help="Override LLM max_output_tokens if supported")
     args = parser.parse_args()
 
@@ -68,7 +69,9 @@ def main():
     output_dir = Path(args.output_dir or cfg["experiment"]["output_dir"])
     runs_per_instance = args.runs or cfg["experiment"].get("runs_per_instance", 1)
     workers = args.workers or cfg["experiment"].get("workers", 1)
+    model_max_tokens_map = cfg.get("llm", {}).get("model_max_tokens", {}) or {}
     model_max_map = cfg.get("llm", {}).get("model_max_output_tokens", {}) or {}
+    global_max_tokens = args.max_tokens or cfg.get("llm", {}).get("max_tokens")
     global_max_output_tokens = args.max_output_tokens or cfg.get("llm", {}).get("max_output_tokens")
 
     base = Path(__file__).parent
@@ -100,6 +103,9 @@ def main():
         mot = global_max_output_tokens
         if mot is None:
             mot = model_max_map.get(model_name)
+        mtok = global_max_tokens
+        if mtok is None:
+            mtok = model_max_tokens_map.get(model_name)
         runner = ExperimentRunner(
             base_dir=base,
             domain=domain,
@@ -111,6 +117,7 @@ def main():
             config_path=cfg_path,
             output_dir=output_dir,
             run_id_override=run_id_base,
+            max_tokens=mtok,
             max_output_tokens=mot,
         )
         return runner.run(response_text=response_text, run_seq=seq)
