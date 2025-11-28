@@ -96,7 +96,7 @@ def main():
         run_id_base = Path(output_dir).name
         # if output_dir is default "results", append timestamp to avoid clashes
         if run_id_base == "results":
-            run_id_base = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+            run_id_base = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
 
     results: List[Dict[str, Any]] = []
     tasks = [(idx, m, inst) for idx, (m, inst) in enumerate([(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)])]
