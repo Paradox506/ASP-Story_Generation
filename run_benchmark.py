@@ -53,6 +53,7 @@ def main():
     parser.add_argument("--runs", type=int, help="Runs per instance per model")
     parser.add_argument("--instances", nargs="+", help="Explicit instance directories (relative or absolute)")
     parser.add_argument("--workers", type=int, help="Number of parallel workers (default serial)")
+    parser.add_argument("--max-output-tokens", type=int, help="Override LLM max_output_tokens if supported")
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
@@ -67,6 +68,7 @@ def main():
     output_dir = Path(args.output_dir or cfg["experiment"]["output_dir"])
     runs_per_instance = args.runs or cfg["experiment"].get("runs_per_instance", 1)
     workers = args.workers or cfg["experiment"].get("workers", 1)
+    max_output_tokens = args.max_output_tokens or cfg.get("llm", {}).get("max_output_tokens")
 
     base = Path(__file__).parent
     if args.instances:
@@ -104,6 +106,7 @@ def main():
             config_path=cfg_path,
             output_dir=output_dir,
             run_id_override=run_id_base,
+            max_output_tokens=max_output_tokens,
         )
         return runner.run(response_text=response_text, run_seq=seq)
 

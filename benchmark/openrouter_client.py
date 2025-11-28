@@ -16,11 +16,13 @@ class OpenRouterClient:
         api_key: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
+        max_output_tokens: int | None = None,
     ):
         self.model = model
         self.api_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.max_output_tokens = max_output_tokens
         self.endpoint = "https://openrouter.ai/api/v1/chat/completions"
 
     def generate(self, prompt: str) -> Dict:
@@ -37,6 +39,8 @@ class OpenRouterClient:
             "max_tokens": self.max_tokens,
             "stream": False,
         }
+        if self.max_output_tokens is not None:
+            payload["max_output_tokens"] = self.max_output_tokens
         start = time.time()
         try:
             resp = requests.post(self.endpoint, headers=headers, json=payload, timeout=120)
