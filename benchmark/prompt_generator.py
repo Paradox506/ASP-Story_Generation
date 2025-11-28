@@ -1,28 +1,32 @@
-import re
 from pathlib import Path
-from typing import Optional, Tuple, List
+import re
+from typing import Optional, List, Tuple
 
 
-class PromptGenerator:
-    """
-    Prompt loader with light-weight templating for Aladdin instances.
-    Other domains currently return the static prompt text.
-    """
-
+class BasePromptGenerator:
     def __init__(self, domain: str, asp_version: str = "original"):
         self.domain = domain
         self.asp_version = asp_version
 
     def load_prompt(self, base_dir: Path, instance_dir: Optional[Path] = None) -> str:
-        """
-        base_dir: repository root path.
-        instance_dir: used for Aladdin to append instance-specific facts (roles, loyalty).
-        """
-        path = base_dir / self.domain / self.asp_version / "prompt.txt"
-        use_base_template = False
-        loyalty_text = ""
+        prompt_path = base_dir / self.domain / self.asp_version / "prompt.txt"
+        if prompt_path.exists():
+            prompt_text = prompt_path.read_text()
+        else:
+            prompt_text = (base_dir / self.domain / "base" / "prompt.txt").read_text()
+        if instance_dir:
+            prompt_text = self.augment_prompt(prompt_text, base_dir, instance_dir)
+        return prompt_text
 
-        if self.domain == "aladdin" and instance_dir is not None:
+    def augment_prompt(self, prompt_text: str, base_dir: Path, instance_dir: Path) -> str:
+        return prompt_text
+
+
+class AladdinPromptGenerator(BasePromptGenerator):
+    def load_prompt(self, base_dir: Path, instance_dir: Optional[Path] = None) -> str:
+        loyalty_text = ""
+        use_base_template = False
+        if instance_dir:
             loyalty_path = instance_dir / "loyalty.txt"
             if loyalty_path.exists():
                 loyalty_text = loyalty_path.read_text().strip()
@@ -31,24 +35,16 @@ class PromptGenerator:
         if use_base_template:
             prompt_text = (base_dir / self.domain / "base" / "prompt.txt").read_text()
             if loyalty_text:
-                prompt_text = self._insert_loyalty(prompt_text, loyalty_text)
+                prompt_text = self.insert_loyalty(prompt_text, loyalty_text)
         else:
-            if not path.exists():
-                fallback = base_dir / self.domain / "base" / "prompt.txt"
-                prompt_text = fallback.read_text()
-            else:
-                prompt_text = path.read_text()
+            prompt_text = super().load_prompt(base_dir, instance_dir)
 
-        if self.domain == "aladdin" and instance_dir is not None:
-            prompt_text = self._augment_aladdin(prompt_text, instance_dir)
-        elif self.domain == "western" and instance_dir is not None:
-            prompt_text = self._augment_western(prompt_text, instance_dir)
-        elif self.domain == "secret_agent" and instance_dir is not None:
-            prompt_text = self._augment_secret_agent(prompt_text, instance_dir)
+        if instance_dir:
+            prompt_text = self.augment_prompt(prompt_text, base_dir, instance_dir)
         return prompt_text
 
-    def _augment_aladdin(self, prompt_text: str, instance_dir: Path) -> str:
-        roles, loyals = self._parse_aladdin_instance(instance_dir / "instance.lp")
+    def augment_prompt(self, prompt_text: str, base_dir: Path, instance_dir: Path) -> str:
+        roles, loyals = self.parse_instance(instance_dir / "instance.lp")
         if roles or loyals:
             prompt_text += "\n\n"
         if roles:
@@ -61,30 +57,7 @@ class PromptGenerator:
                 prompt_text += f"- {a} is loyal to {b}\n"
         return prompt_text
 
-    def _insert_loyalty(self, prompt_text: str, loyalty_text: str) -> str:
-        """
-        Insert loyalty description after the second paragraph (first blank line).
-        """
-        parts = prompt_text.split("\n\n")
-        if len(parts) >= 2:
-            return "\n\n".join([parts[0], parts[1], "Loyalty relations:\n" + loyalty_text] + parts[2:])
-        return prompt_text + "\n\nLoyalty relations:\n" + loyalty_text
-
-    def _augment_western(self, prompt_text: str, instance_dir: Path) -> str:
-        intro = self._read_optional(instance_dir / "intro.txt")
-        if intro:
-            prompt_text += "\n\nInstance intro:\n" + intro
-        return prompt_text
-
-    def _augment_secret_agent(self, prompt_text: str, instance_dir: Path) -> str:
-        intro = self._read_optional(instance_dir / "intro.txt")
-        if prompt_text.strip() == "" and intro:
-            prompt_text = intro
-        elif intro:
-            prompt_text += "\n\nMap description:\n" + intro
-        return prompt_text
-
-    def _parse_aladdin_instance(self, path: Path) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
+    def parse_instance(self, path: Path) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
         roles: List[Tuple[str, str]] = []
         loyals: List[Tuple[str, str]] = []
         if not path.exists():
@@ -102,5 +75,42 @@ class PromptGenerator:
                 loyals.append((m.group(1), m.group(2)))
         return roles, loyals
 
-    def _read_optional(self, path: Path) -> str:
+    def insert_loyalty(self, prompt_text: str, loyalty_text: str) -> str:
+        parts = prompt_text.split("\n\n")
+        if len(parts) >= 2:
+            return "\n\n".join([parts[0], parts[1], "Loyalty relations:\n" + loyalty_text] + parts[2:])
+        return prompt_text + "\n\nLoyalty relations:\n" + loyalty_text
+
+
+class WesternPromptGenerator(BasePromptGenerator):
+    def augment_prompt(self, prompt_text: str, base_dir: Path, instance_dir: Path) -> str:
+        intro = self.read_optional(instance_dir / "intro.txt")
+        if intro:
+            prompt_text += "\n\nInstance intro:\n" + intro
+        return prompt_text
+
+    def read_optional(self, path: Path) -> str:
         return path.read_text() if path.exists() else ""
+
+
+class SecretAgentPromptGenerator(BasePromptGenerator):
+    def augment_prompt(self, prompt_text: str, base_dir: Path, instance_dir: Path) -> str:
+        intro = self.read_optional(instance_dir / "intro.txt")
+        if prompt_text.strip() == "" and intro:
+            prompt_text = intro
+        elif intro:
+            prompt_text += "\n\nMap description:\n" + intro
+        return prompt_text
+
+    def read_optional(self, path: Path) -> str:
+        return path.read_text() if path.exists() else ""
+
+
+def get_prompt_generator(domain: str, asp_version: str):
+    if domain == "aladdin":
+        return AladdinPromptGenerator(domain, asp_version)
+    if domain == "western":
+        return WesternPromptGenerator(domain, asp_version)
+    if domain == "secret_agent":
+        return SecretAgentPromptGenerator(domain, asp_version)
+    return BasePromptGenerator(domain, asp_version)

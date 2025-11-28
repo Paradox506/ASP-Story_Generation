@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, List, Optional
 
-from .prompt_generator import PromptGenerator
+from .prompt_generator import get_prompt_generator
 from .evaluators.causal_evaluator import CausalEvaluator
 from .evaluators.conflict_evaluator import ConflictEvaluator
 from .evaluators.intentionality_evaluator import IntentionalityEvaluator
@@ -18,7 +18,7 @@ class DomainAdapter:
 
 def _prompt_builder(domain: str):
     def builder(base: Path, instance: Path, asp_version: str) -> str:
-        return PromptGenerator(domain, asp_version).load_prompt(base, instance)
+        return get_prompt_generator(domain, asp_version).load_prompt(base, instance)
 
     return builder
 
