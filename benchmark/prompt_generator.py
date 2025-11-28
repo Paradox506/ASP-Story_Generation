@@ -42,6 +42,12 @@ class PromptGenerator:
             intro = self._read_optional(instance_dir / "intro.txt")
             if intro:
                 prompt_text += "\n\nInstance intro:\n" + intro
+        elif self.domain == "secret_agent" and instance_dir is not None:
+            intro = self._read_optional(instance_dir / "intro.txt")
+            if prompt_text.strip() == "" and intro:
+                prompt_text = intro
+            elif intro:
+                prompt_text += "\n\nMap description:\n" + intro
         return prompt_text
 
     def _parse_aladdin_instance(self, path: Path) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
