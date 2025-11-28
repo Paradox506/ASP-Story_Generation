@@ -1,6 +1,5 @@
 from pathlib import Path
-import re
-from typing import Optional, List, Tuple
+from typing import Optional
 
 
 class BasePromptGenerator:
@@ -31,25 +30,13 @@ class AladdinPromptGenerator(BasePromptGenerator):
                 loyalty_text = loyalty_path.read_text().strip()
 
         prompt_text = super().load_prompt(base_dir, instance_dir)
-        if instance_dir:
-            prompt_text = self.augment_prompt(prompt_text, base_dir, instance_dir, loyalty_text)
+        if loyalty_text:
+            parts = prompt_text.split("\n\n")
+            if len(parts) >= 2:
+                prompt_text = "\n\n".join([parts[0], parts[1], loyalty_text] + parts[2:])
+            else:
+                prompt_text = prompt_text + "\n\n" + loyalty_text
         return prompt_text
-
-    def augment_prompt(self, prompt_text: str, base_dir: Path, instance_dir: Path, loyalty_text: str = "") -> str:
-        loyals = loyals_from_text(loyalty_text)
-        if loyals:
-            prompt_text += "\n\nLoyalty relations:\n"
-            for a, b in loyals:
-                prompt_text += f"- {a} is loyal to {b}\n"
-        if loyals:
-            prompt_text = self.insert_loyalty(prompt_text, loyalty_text)
-        return prompt_text
-
-    def insert_loyalty(self, prompt_text: str, loyalty_text: str) -> str:
-        parts = prompt_text.split("\n\n")
-        if len(parts) >= 2:
-            return "\n\n".join([parts[0], parts[1], "Loyalty relations:\n" + loyalty_text] + parts[2:])
-        return prompt_text + "\n\nLoyalty relations:\n" + loyalty_text
 
 
 class WesternPromptGenerator(BasePromptGenerator):
@@ -84,13 +71,3 @@ def get_prompt_generator(domain: str, asp_version: str):
     if domain == "secret_agent":
         return SecretAgentPromptGenerator(domain, asp_version)
     return BasePromptGenerator(domain, asp_version)
-
-
-def loyals_from_text(text: str) -> List[Tuple[str, str]]:
-    loyals: List[Tuple[str, str]] = []
-    if not text:
-        return loyals
-    m_iter = re.finditer(r"([A-Za-z0-9_]+)\s+is loyal to\s+([A-Za-z0-9_]+)", text, re.I)
-    for m in m_iter:
-        loyals.append((m.group(1).lower(), m.group(2).lower()))
-    return loyals
