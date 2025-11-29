@@ -340,15 +340,26 @@ class WesternPlanParser(BasePlanParser):
 
     def fill_params(self, aid: int, params: List[str], subj: str) -> List[str]:
         out = params[:]
-        # heal(Target, Item) - if item missing, default to meds
-        if aid == 4 and len(out) == 1:
-            out.append("meds")
-        # take(Obj, Ch) - if missing, default to meds/carl
+        # Action 3: take from merchant carl (expects Obj, Ch)
         if aid == 3:
             if len(out) == 0:
                 out = ["meds", "carl"]
             elif len(out) == 1:
-                out.append("carl")
+                # if only object provided, append carl; if only character provided, prepend meds
+                if out[0] == "carl" or out[0] in self.valid_objects:
+                    out.append("carl")
+                else:
+                    out = ["meds", out[0]]
+        # Action 4: take from another character (expects Obj, Ch!=carl)
+        if aid == 4:
+            if len(out) == 0:
+                out = ["meds", subj]  # default other character as subject? fallback
+            elif len(out) == 1:
+                # treat the single param as character, prepend meds
+                out = ["meds", out[0]]
+        # Action 5: heal(Target, Item) - if item missing, default to meds
+        if aid == 5 and len(out) == 1:
+            out.append("meds")
         return out
 
     def validate_param_values(self, params: List[str]) -> bool:
@@ -362,7 +373,11 @@ class WesternPlanParser(BasePlanParser):
         return self.builder.build(actions)
 
 
-def get_plan_parser(domain: str, domain_dir: Path, instance_dir: Path) -> BasePlanParser:
+def get_plan_parser(domain: str, domain_dir: Path, instance_dir: Path, use_author_style: bool = False) -> BasePlanParser:
+    if use_author_style:
+        from benchmark.llm_post_processing.author_plan_parser import AuthorStylePlanParser
+
+        return AuthorStylePlanParser(domain, domain_dir, instance_dir)
     if domain == "aladdin":
         return AladdinPlanParser(domain, domain_dir, instance_dir)
     if domain == "secret_agent":
