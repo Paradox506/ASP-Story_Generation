@@ -321,6 +321,23 @@ class SecretAgentPlanParser(BasePlanParser):
 
 
 class WesternPlanParser(BasePlanParser):
+    def load_symbols(self):
+        super().load_symbols()
+        # additionally parse map locations from benchmark/prompts/western/2map.txt
+        try:
+            repo_root = self.domain_dir.parent.parent
+            map_path = repo_root / "benchmark" / "prompts" / "western" / "2map.txt"
+            if map_path.exists():
+                import re
+
+                locs = set()
+                for line in map_path.read_text().splitlines():
+                    for m in re.finditer(r"location\s+([A-Za-z0-9_]+)", line):
+                        locs.add(m.group(1))
+                self.valid_places |= locs
+        except Exception:
+            pass
+
     def fill_params(self, aid: int, params: List[str], subj: str) -> List[str]:
         out = params[:]
         # heal(Target, Item) - if item missing, default to meds
