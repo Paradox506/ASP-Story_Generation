@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, List
 import subprocess
 import re
+import shutil
 
 try:
     import clingo  # type: ignore
@@ -34,6 +35,13 @@ class ASPValidator:
         self.use_clingo_api = use_clingo_api and clingo is not None
         self.mapper = ActionMapper(domain)
         self.last_stdout: Optional[str] = None
+
+    def get_input_files(self) -> List[str]:
+        """
+        Return the list of LP files that will be fed to clingo for this validator.
+        Useful for persisting alongside run artifacts.
+        """
+        return self._collect_files()
 
     def _collect_files(self) -> List[str]:
         files: List[str] = []
