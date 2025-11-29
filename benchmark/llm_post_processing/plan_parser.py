@@ -304,8 +304,11 @@ class AladdinPlanParser(BasePlanParser):
             return False
         return True
 
-    def build_constraints(self, actions: List[Dict]) -> str:
-        return self.builder.build(actions)
+    def build_constraints(self, actions: List[Dict], maxstep: int = None) -> str:
+        try:
+            return self.builder.build(actions, maxstep=maxstep)
+        except TypeError:
+            return self.builder.build(actions)
 
 
 class SecretAgentPlanParser(BasePlanParser):
@@ -316,8 +319,11 @@ class SecretAgentPlanParser(BasePlanParser):
             return False
         return True
 
-    def build_constraints(self, actions: List[Dict]) -> str:
-        return self.builder.build(actions)
+    def build_constraints(self, actions: List[Dict], maxstep: int = None) -> str:
+        try:
+            return self.builder.build(actions, maxstep=maxstep)
+        except TypeError:
+            return self.builder.build(actions)
 
 
 class WesternPlanParser(BasePlanParser):
@@ -369,8 +375,11 @@ class WesternPlanParser(BasePlanParser):
             return False
         return True
 
-    def build_constraints(self, actions: List[Dict]) -> str:
-        return self.builder.build(actions)
+    def build_constraints(self, actions: List[Dict], maxstep: int = None) -> str:
+        try:
+            return self.builder.build(actions, maxstep=maxstep)
+        except TypeError:
+            return self.builder.build(actions)
 
 
 def get_plan_parser(domain: str, domain_dir: Path, instance_dir: Path, use_author_style: bool = False) -> BasePlanParser:
