@@ -13,7 +13,7 @@ from benchmark.llm_post_processing.plan_parser import get_plan_parser
 
 
 class AuthorStyleConstraintBuilder:
-    def __init__(self, domain: str, require_conflict: bool = True):
+    def __init__(self, domain: str, require_conflict: bool):
         self.mapper = ActionMapper(domain)
         self.require_conflict = require_conflict
 
@@ -42,9 +42,12 @@ class AuthorStylePlanParser:
     but generate author-style constraints.
     """
 
-    def __init__(self, domain: str, domain_dir: Path, instance_dir: Path, require_conflict: bool = True):
+    def __init__(self, domain: str, domain_dir: Path, instance_dir: Path, require_conflict: bool = None):
         self.domain = domain
         self.inner = get_plan_parser(domain, domain_dir, instance_dir)
+        # Conflict constraint only for western by default
+        if require_conflict is None:
+            require_conflict = domain == "western"
         self.builder = AuthorStyleConstraintBuilder(domain, require_conflict=require_conflict)
 
     def parse(self, llm_output: str) -> Dict[str, Any]:
