@@ -58,6 +58,7 @@ def main():
     parser.add_argument("--max-output-tokens", type=int, help="Override LLM max_output_tokens if supported")
     parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic"], help="LLM provider")
     parser.add_argument("--prompt-only", action="store_true", help="Only build prompts without calling LLM/ASP (will be persisted)")
+    parser.add_argument("--use-author-parser", action="store_true", help="Use author-style constraint parser instead of default")
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
@@ -85,6 +86,7 @@ def main():
     domain_max_map = llm_cfg.domain_max_output_tokens or {}
     global_max_tokens = args.max_tokens or llm_cfg.max_tokens
     global_max_output_tokens = args.max_output_tokens or llm_cfg.max_output_tokens
+    use_author_style = args.use_author_parser
 
     base = Path(__file__).parent
     if args.instances:
@@ -143,6 +145,7 @@ def main():
             max_output_tokens=mot,
             exp_cfg=exp_cfg,
             llm_cfg=llm_cfg,
+            use_author_style=use_author_style,
         )
         if args.prompt_only:
             prompt = runner.prompt_gen.build_prompt(base, inst_dir)

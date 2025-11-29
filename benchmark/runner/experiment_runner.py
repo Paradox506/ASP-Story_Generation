@@ -37,6 +37,7 @@ class ExperimentRunner:
         max_output_tokens: Optional[int] = None,
         exp_cfg: Optional[ExperimentConfig] = None,
         llm_cfg: Optional[LlmConfig] = None,
+        use_author_style: bool = False,
     ):
         self.base_dir = base_dir
         self.domain = domain
@@ -69,7 +70,7 @@ class ExperimentRunner:
             self.instance_label,
         )
         self.prompt_gen = get_prompt_builder(domain, asp_version)
-        self.parser = get_plan_parser(domain, domain_dir, instance_dir, use_author_style=True)
+        self.parser = get_plan_parser(domain, domain_dir, instance_dir, use_author_style=use_author_style)
         self.validator = ASPValidator(domain, domain_dir, instance_dir, clingo_path=clingo_path)
         self.evaluator = None
         if domain == "secret_agent":
