@@ -103,12 +103,8 @@ def main():
     if args.prompt_only:
         response_text = ""  # force offline flow but skip ASP
 
-    run_id_base = Path(args.output or output_dir).name if args.output else None
-    if not run_id_base:
-        run_id_base = Path(output_dir).name
-        # if output_dir is default "results", append timestamp to avoid clashes
-        if run_id_base == "results":
-            run_id_base = datetime.now(ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d_%H-%M-%S_%Z")
+    # Always use timestamp-based run_id to keep date/time in paths
+    run_id_base = datetime.now(ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d_%H-%M-%S_%Z")
 
     results: List[Dict[str, Any]] = []
     tasks = [(idx, m, inst) for idx, (m, inst) in enumerate([(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)])]
