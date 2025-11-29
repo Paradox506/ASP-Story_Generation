@@ -71,13 +71,32 @@ class WesternConstraintBuilder(ConstraintBuilder):
             aid = action["actionId"]
             params = action.get("parameters", [])
             functor = self.mapper.to_asp_functor(aid, params)
-            lines.append(f":- not act({subj}, {functor}, {i}).")
+            # Action 1 (snakebite) is unintentional -> act/3
+            if aid == 1:
+                lines.append(f"act({subj}, {functor}, {i}).")
+                continue
+            # Action 6 (do nothing) not represented in ASP; skip
+            if aid == 6:
+                continue
+            intention = self._default_intention(aid, params, subj)
             executed_flag = action.get("executed", True)
             if executed_flag:
-                lines.append(f":- not executed({subj}, {functor}, {i}).")
+                lines.append(f"act({subj}, {functor}, {intention}, {i}).")
             else:
-                lines.append(f":- executed({subj}, {functor}, {i}).")
+                # use unexec_act to indicate non-executed intentional action
+                lines.append(f"unexec_act({subj}, {functor}, {intention}, {i}).")
         return "\n".join(lines)
+
+    def _default_intention(self, aid: int, params: List[str], subj: str) -> str:
+        if aid == 2 and params:  # move(Dest)
+            return f"at({subj},{params[0]})"
+        if aid == 3 and len(params) >= 2:  # take(Obj, Ch)
+            return f"possessed_by({params[0]},{subj})"
+        if aid == 4 and params:  # heal(Target, Item)
+            return f"alive({params[0]})"
+        if aid == 5 and params:  # kill(Victim)
+            return f"dead({params[0]})"
+        return "alive(timmy)"
 
 
 class SecretAgentConstraintBuilder(ConstraintBuilder):
@@ -302,9 +321,16 @@ class SecretAgentPlanParser(BasePlanParser):
 
 
 class WesternPlanParser(BasePlanParser):
+    def fill_params(self, aid: int, params: List[str], subj: str) -> List[str]:
+        out = params[:]
+        # heal(Target, Item) - if item missing, default to meds
+        if aid == 4 and len(out) == 1:
+            out.append("meds")
+        return out
+
     def validate_param_values(self, params: List[str]) -> bool:
         for p in params:
-            if p in self.valid_characters or p in self.valid_places:
+            if p in self.valid_characters or p in self.valid_places or p in self.valid_objects:
                 continue
             return False
         return True
