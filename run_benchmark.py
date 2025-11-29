@@ -150,7 +150,7 @@ def main():
         )
         if args.prompt_only:
             prompt = runner.prompt_gen.build_prompt(base, inst_dir)
-            run_id = f"{run_id_base}/run_{seq:04d}"
+            run_id = f"{run_id_base}_prompt_only/run_{seq:04d}"
             result = {
                 "stage": "prompt_only",
                 "success": True,
