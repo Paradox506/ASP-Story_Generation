@@ -49,11 +49,12 @@ class ActionMapper:
             }
         if domain == "western":
             return {
-                1: ActionSchema("bitten_by_snake", 0),
+                1: ActionSchema("snakebite", 0),
                 2: ActionSchema("move", 1),
-                3: ActionSchema("take_meds_from_carl", 0),
-                4: ActionSchema("take_meds_from_char", 1),
-                5: ActionSchema("use_meds_on", 1),
+                3: ActionSchema("take", 2),
+                4: ActionSchema("heal", 2),
+                5: ActionSchema("heal", 2),  # western prompt defines action 5 as heal
+                6: ActionSchema("do_nothing", 0),  # spontaneous, skipped in constraints
             }
         raise ValueError(f"Unsupported domain {domain}")
 
