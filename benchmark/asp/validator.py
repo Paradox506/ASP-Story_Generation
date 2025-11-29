@@ -54,23 +54,23 @@ class ASPValidator:
                 else domain_root / name
             )
             if path.exists():
-                files.append(str(path))
+                files.append(str(path.resolve()))
         # instance-specific
         for name in ["instance_init.lp", "init.lp"]:
             path = self.instance_dir / name
             if path.exists():
-                files.append(str(path))
+                files.append(str(path.resolve()))
                 break
         inst = self.instance_dir / "instance.lp"
         if inst.exists():
-            files.append(str(inst))
+            files.append(str(inst.resolve()))
         goal = (
             base_dir / "goal.lp"
             if domain_root.name != "original" and base_dir.exists()
             else self.domain_dir / "goal.lp"
         )
         if goal.exists():
-            files.append(str(goal))
+            files.append(str(goal.resolve()))
         return files
 
     def _constraints_from_actions(self, actions: List[Dict]) -> str:
