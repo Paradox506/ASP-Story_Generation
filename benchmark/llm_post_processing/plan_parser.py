@@ -343,6 +343,12 @@ class WesternPlanParser(BasePlanParser):
         # heal(Target, Item) - if item missing, default to meds
         if aid == 4 and len(out) == 1:
             out.append("meds")
+        # take(Obj, Ch) - if missing, default to meds/carl
+        if aid == 3:
+            if len(out) == 0:
+                out = ["meds", "carl"]
+            elif len(out) == 1:
+                out.append("carl")
         return out
 
     def validate_param_values(self, params: List[str]) -> bool:
