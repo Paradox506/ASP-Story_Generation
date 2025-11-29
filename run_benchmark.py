@@ -57,7 +57,7 @@ def main():
     parser.add_argument("--max-tokens", type=int, help="Override LLM max_tokens")
     parser.add_argument("--max-output-tokens", type=int, help="Override LLM max_output_tokens if supported")
     parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic"], help="LLM provider")
-    parser.add_argument("--prompt-only", action="store_true", help="Only build and print prompts without calling LLM/ASP")
+    parser.add_argument("--prompt-only", action="store_true", help="Only build prompts without calling LLM/ASP (will be persisted)")
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
@@ -150,14 +150,17 @@ def main():
         )
         if args.prompt_only:
             prompt = runner.prompt_gen.build_prompt(base, inst_dir)
-            print(f"--- Prompt for {inst_dir} ---\n{prompt}")
-            return {
+            run_id = f"{run_id_base}/run_{seq:04d}"
+            result = {
                 "stage": "prompt_only",
                 "success": True,
                 "prompt": prompt,
-                "run_id": f"{run_id_base}/run_{seq:04d}",
+                "run_id": run_id,
                 "metadata": {"domain": domain, "instance": inst_dir.name, "model": model_name},
             }
+            runner._persist_result(result, run_id, prompt, llm_raw=None, parse=None, asp=None)
+            print(f"--- Prompt saved for {inst_dir} at {run_id} ---")
+            return result
         return runner.run(response_text=response_text if args.response_file else None, run_seq=seq)
 
     if workers and workers > 1:
