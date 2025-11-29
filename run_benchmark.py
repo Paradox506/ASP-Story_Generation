@@ -57,6 +57,7 @@ def main():
     parser.add_argument("--max-tokens", type=int, help="Override LLM max_tokens")
     parser.add_argument("--max-output-tokens", type=int, help="Override LLM max_output_tokens if supported")
     parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic"], help="LLM provider")
+    parser.add_argument("--prompt-only", action="store_true", help="Only build and print prompts without calling LLM/ASP")
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
@@ -99,6 +100,8 @@ def main():
     response_text = None
     if args.response_file:
         response_text = Path(args.response_file).read_text()
+    if args.prompt_only:
+        response_text = ""  # force offline flow but skip ASP
 
     run_id_base = Path(args.output or output_dir).name if args.output else None
     if not run_id_base:
@@ -145,7 +148,17 @@ def main():
             exp_cfg=exp_cfg,
             llm_cfg=llm_cfg,
         )
-        return runner.run(response_text=response_text, run_seq=seq)
+        if args.prompt_only:
+            prompt = runner.prompt_gen.build_prompt(base, inst_dir)
+            print(f"--- Prompt for {inst_dir} ---\n{prompt}")
+            return {
+                "stage": "prompt_only",
+                "success": True,
+                "prompt": prompt,
+                "run_id": f"{run_id_base}/run_{seq:04d}",
+                "metadata": {"domain": domain, "instance": inst_dir.name, "model": model_name},
+            }
+        return runner.run(response_text=response_text if args.response_file else None, run_seq=seq)
 
     if workers and workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as ex:
