@@ -52,6 +52,12 @@ class ExperimentRunner:
         self.max_output_tokens = max_output_tokens
         self.exp_cfg = exp_cfg
         self.llm_cfg = llm_cfg
+        # use a more specific instance label to avoid collisions (e.g., western_instances_15/instance_12)
+        parts = instance_dir.parts
+        if len(parts) >= 2:
+            self.instance_label = f"{parts[-2]}/{parts[-1]}"
+        else:
+            self.instance_label = instance_dir.name
 
         domain_dir = base_dir / domain / asp_version
         self.writer = ArtifactWriter(
@@ -59,7 +65,7 @@ class ExperimentRunner:
             domain,
             asp_version,
             model,
-            instance_dir.name,
+            self.instance_label,
         )
         self.prompt_gen = get_prompt_builder(domain, asp_version)
         self.parser = get_plan_parser(domain, domain_dir, instance_dir)
@@ -89,10 +95,8 @@ class ExperimentRunner:
 
     def run(self, response_text: Optional[str] = None, run_seq: int = 0) -> Dict:
         offline = response_text is not None
-        prompt = self.prompt_gen.load_prompt(self.base_dir, self.instance_dir)
+        prompt = self.prompt_gen.build_prompt(self.base_dir, self.instance_dir)
         base_id = self.run_id_override or datetime.now(ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d_%H-%M-%S_%Z")
-        if offline:
-            base_id = f"{base_id}_offline"
         run_id = f"{base_id}/run_{run_seq:04d}"
         if response_text is None:
             api_key = load_api_key(self.config_path, provider=self.provider)
@@ -206,7 +210,7 @@ class ExperimentRunner:
             "domain": self.domain,
             "asp_version": self.asp_version,
             "model": self.model,
-            "instance": self.instance_dir.name,
+            "instance": self.instance_label,
             "maxstep": self.maxstep,
         }
 

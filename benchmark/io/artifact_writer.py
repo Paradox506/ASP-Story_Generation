@@ -54,6 +54,8 @@ class ArtifactWriter:
             (dest_dir / "clingo_raw.json").write_text(raw_clingo)
         if constraints is not None:
             (dest_dir / f"{self.domain}_NarrPlan.lp").write_text(constraints)
+        if result.get("stage") == "prompt_only":
+            (dest_dir / "PROMPT_ONLY").write_text("Prompt-only run (no LLM/ASP call)")
         return dest_dir
 
     def append_log(self, run_id: str, result: Dict):
