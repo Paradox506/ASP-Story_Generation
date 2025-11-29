@@ -1,12 +1,12 @@
 experiment:
   domain: aladdin
-  asp_version: original
+  asp_version: base
   mode: one-off
   models:
     - openai/o1
   runs_per_instance: 1
   instances: []
-  maxstep: 12
+  maxstep: null
   output_dir: results
   workers: 1
 

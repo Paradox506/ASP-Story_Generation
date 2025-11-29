@@ -136,7 +136,10 @@ class ExperimentRunner:
             self._persist_result(result, run_id, prompt, response_text, parse_result, asp=None)
             return result
 
-        constraints_text = self.parser.build_constraints(parse_result["actions"])
+        # determine maxstep: use configured value if provided, otherwise len(actions)+1
+        effective_maxstep = self.maxstep or (len(parse_result["actions"]) + 1)
+
+        constraints_text = self.parser.build_constraints(parse_result["actions"], maxstep=effective_maxstep)
         # persist constraints early so we can reuse the file for clingo input
         constraints_path = self.writer.ensure_dir(run_id) / f"{self.domain}_NarrPlan.lp"
         constraints_path.write_text(constraints_text)
@@ -150,7 +153,7 @@ class ExperimentRunner:
                 pass
         asp_result = self.validator.validate_plan(
             parse_result["actions"],
-            maxstep=self.maxstep,
+            maxstep=effective_maxstep,
             constraints_text=constraints_text,
             constraints_path=str(constraints_path),
         )
