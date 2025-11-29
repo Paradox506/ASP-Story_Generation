@@ -160,6 +160,7 @@ def main():
             }
             runner._persist_result(result, run_id, prompt, llm_raw=None, parse=None, asp=None)
             print(f"--- Prompt saved for {inst_dir} at {run_id} ---")
+            print(prompt)
             return result
         return runner.run(response_text=response_text if args.response_file else None, run_seq=seq)
 
