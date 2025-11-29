@@ -46,11 +46,25 @@ class AladdinPromptBuilder(BasePromptBuilder):
 
 
 class WesternPromptBuilder(BasePromptBuilder):
-    def augment_prompt(self, prompt_text: str, base_dir: Path, instance_dir: Path) -> str:
-        intro_path = instance_dir / "intro.txt"
-        if intro_path.exists():
-            prompt_text += "\n\nInstance intro:\n" + intro_path.read_text()
-        return prompt_text
+    def build_prompt(self, base_dir: Path, instance_dir: Optional[Path] = None) -> str:
+        """
+        Western prompt assembly:
+        1) instance intro.txt (if present)
+        2) benchmark/prompts/western/base/2map.txt
+        3) benchmark/prompts/western/base/3term_definitions.txt
+        4) benchmark/prompts/western/base/4instructions.txt
+        """
+        parts = []
+        if instance_dir:
+            intro_path = instance_dir / "intro.txt"
+            if intro_path.exists():
+                parts.append(intro_path.read_text().strip())
+        prompt_dir = base_dir / "benchmark" / "prompts" / "western" / "base"
+        for name in ["2map.txt", "3term_definitions.txt", "4instructions.txt"]:
+            p = prompt_dir / name
+            if p.exists():
+                parts.append(p.read_text().strip())
+        return "\n\n".join(parts)
 
 
 class SecretAgentPromptBuilder(BasePromptBuilder):

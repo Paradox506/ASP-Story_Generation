@@ -1,0 +1,10 @@
+A character plan is a causally sound sequence of actions leading to a desired world state. The desired world state is called the "character goal" for this character plan.
+A narrative plan consists of spontaneous actions and a set of character plan, and associate with each action in these character plans the following value:
+- an integer number "id" indicating when this action happens in the global timeline
+- a boolean value "executed", indicating whether this action should be successfully executed, or only in the character's mind. An action has to be successfully executed unless it is impossible to satisfy its preconditions.
+A narrative plan may also be associated with a desired world state called the "narrative goal". The actions with true "executed" value need to form a causally sound sequence leading to the narrative goal. 
+In a narrative plan, we say there is causal link between two actions a1 and a2, denoted <p: a1, a2>, if the effect of a1 and the precondition of a2 both include p. 
+We say a causal link <p: a1, a2> is threatened by another action a3 in the narrative plan, if a3's effect causes the negation of p, and a3 is executed in between a1 and a2 in the global timeline.
+A conflict occurs between two character plans in the narrative plan, when there is an action a3 threatening a causal link <p: a1, a2>, such that a3 comes from a character plan, and a1 and a2 come from another character plan.
+
+

@@ -332,7 +332,7 @@ class WesternPlanParser(BasePlanParser):
         # additionally parse map locations from benchmark/prompts/western/2map.txt
         try:
             repo_root = self.domain_dir.parent.parent
-            map_path = repo_root / "benchmark" / "prompts" / "western" / "2map.txt"
+            map_path = repo_root / "benchmark" / "prompts" / "western" / "base" / "2map.txt"
             if map_path.exists():
                 import re
 
