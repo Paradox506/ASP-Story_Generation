@@ -37,8 +37,14 @@ class ASPValidator:
 
     def _collect_files(self) -> List[str]:
         files: List[str] = []
+        domain_root = self.domain_dir
+        base_dir = domain_root.parent / "base"
         for name in ["domain.lp", "actions.lp"]:
-            path = self.domain_dir / name
+            path = (
+                base_dir / name
+                if domain_root.name != "original" and base_dir.exists()
+                else domain_root / name
+            )
             if path.exists():
                 files.append(str(path))
         # instance-specific
@@ -50,7 +56,11 @@ class ASPValidator:
         inst = self.instance_dir / "instance.lp"
         if inst.exists():
             files.append(str(inst))
-        goal = self.domain_dir / "goal.lp"
+        goal = (
+            base_dir / "goal.lp"
+            if domain_root.name != "original" and base_dir.exists()
+            else self.domain_dir / "goal.lp"
+        )
         if goal.exists():
             files.append(str(goal))
         return files
