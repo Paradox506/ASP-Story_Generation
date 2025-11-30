@@ -28,7 +28,7 @@ class WesternConstraintBuilder(ConstraintBuilder):
             if not intention and self.use_default_intention:
                 intention = self._default_intention(aid, params, subj)
             if not intention:
-                raise ValueError(f"Missing intention for actionId={aid} at step {i}")
+                intention = "_"
             executed_flag = action.get("executed", True)
             if executed_flag:
                 lines.append(f"act({subj}, {functor}, {intention}, {i}).")
