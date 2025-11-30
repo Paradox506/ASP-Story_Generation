@@ -215,13 +215,15 @@ class ASPValidator:
         return {"subject": m.group(1), "intention": m.group(2)}
 
     def _parse_conflict(self, atom: str) -> Dict:
-        # conflict(Threatener, Threatened, Link, Action)
-        m = re.match(r'conflict\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)', atom)
+        # conflict(Threatener, ThreatenerIntent, ThreatenedActor, ThreatenedIntent, Action)
+        m = re.match(r'conflict\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)', atom)
         if not m:
             return {}
         return {
             "threatener": m.group(1),
-            "threatened": m.group(2),
-            "link": m.group(3),
-            "action": m.group(4),
+            "threatener_intention": m.group(2),
+            "threatened_actor": m.group(3),
+            "threatened_intention": m.group(4),
+            "action": m.group(5),
+            "summary": f"{m.group(1)} (intends {m.group(2)}) threatens {m.group(3)}'s intention {m.group(4)} via {m.group(5)}",
         }
