@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 from benchmark.asp.action_utils import ActionMapper
 
@@ -9,12 +9,32 @@ class SecretAgentConstraintBuilder(ConstraintBuilder):
     def __init__(self, mapper: ActionMapper):
         super().__init__(mapper)
 
-    def build(self, actions: List[Dict]) -> str:
-        lines: List[str] = []
-        for i, action in enumerate(actions):
+    def build(self, actions: List[Dict], maxstep: Optional[int] = None) -> str:
+        max_const = maxstep or (len(actions) + 1)
+        lines: List[str] = [f"#const maxstep={max_const}.", "% Secret Agent plan constraints"]
+        for t, action in enumerate(actions):
             subj = action["subject"]
-            aid = action["actionId"]
-            params = action.get("parameters", [])
-            functor = self.mapper.to_asp_functor(aid, params)
-            lines.append(f":- not act({subj}, {functor}, {i}).")
-        return "\n".join(lines)
+            functor = self._to_functor(action)
+            executed = action.get("executed", True)
+            if executed:
+                lines.append(f":- not act({subj}, {functor}, {t}).")
+            else:
+                lines.append(f":- not unexec_act({subj}, {functor}, {t}).")
+        return "\n".join(lines) + "\n"
+
+    def _to_functor(self, action: Dict[str, Any]) -> str:
+        functor = action["functor"] if "functor" in action else self.mapper.to_asp_functor(action["actionId"], action.get("parameters", []))
+        params = action.get("parameters", [])
+        if functor in ("move", "pickup") and len(params) == 1:
+            return f"{functor}({params[0]})"
+        if functor == "kill" and len(params) >= 2:
+            return f"{functor}({params[0]},{params[1]})"
+        if functor == "move_through_guards" and len(params) >= 2:
+            return f"{functor}({params[0]},{params[1]})"
+        # fallback to mapper
+        aid = action.get("actionId")
+        try:
+            aid_int = int(aid)
+        except Exception:
+            aid_int = 0
+        return self.mapper.to_asp_functor(aid_int, params)
