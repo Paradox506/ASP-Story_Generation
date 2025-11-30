@@ -59,16 +59,11 @@ class SecretAgentPlanParser:
     # -------- parsing --------
     def parse(self, llm_output: str) -> Dict[str, Any]:
         result: Dict[str, Any] = {"raw_output": llm_output, "success": False}
-        try:
-            data = json.loads(llm_output)
-        except Exception as e:
-            result["error_type"] = "invalid_json"
-            result["error_details"] = str(e)
+        data = self._load_json_array(llm_output)
+        if isinstance(data, dict):  # error payload
+            result.update(data)
             return result
-        if not isinstance(data, list):
-            result["error_type"] = "invalid_json"
-            result["error_details"] = "Expected a list of actions"
-            return result
+
         actions: List[Dict[str, Any]] = []
         for idx, act in enumerate(data):
             ok, parsed, err = self._parse_action(act)
@@ -87,50 +82,38 @@ class SecretAgentPlanParser:
         for f in required:
             if f not in act:
                 return False, None, f"Missing field {f}"
+
         subject = act["subject"]
-        subject_norm = self._normalize_subject(subject)
-        has_agent_token = isinstance(subject, str) and ("agent" in subject.lower())
-        # allow arbitrary subject; treat any subject containing 'agent' as known
-        subject_known = subject_norm in self.valid_characters or has_agent_token
+        subject_norm, subject_known = self._normalize_and_check_subject(subject)
+
         aid_raw = str(act["actionId"])
         if aid_raw not in self.ACTION_MAP:
             return False, None, f"Unknown actionId {aid_raw}"
         functor, arity = self.ACTION_MAP[aid_raw]
-        params = act.get("parameters") or {}
-        # normalize params to list
-        params_list = self._normalize_params(functor, params)
+
+        params_raw = act.get("parameters") or {}
+        params_list = self._normalize_params(functor, params_raw)
         if len(params_list) != arity:
             return False, None, f"Action {functor} expects {arity} params, got {len(params_list)}"
-        # validate params
-        if functor in ("move", "move_through_guards"):
-            if params_list[0] not in self.valid_locations:
-                return False, None, f"Unknown location {params_list[0]}"
-        if functor == "kill":
-            # target could be mastermind or other character; accept any character
-            if params_list and (params_list[0] not in self.valid_characters and params_list[0] != "mastermind"):
-                return False, None, f"Unknown target {params_list[0]}"
-        if functor == "pickup":
-            item = params_list[0]
-            # allow gun and dox* even if not enumerated in objects
-            if item not in self.valid_items and not (item == "gun" or item.startswith("dox")):
-                return False, None, f"Unknown item {params_list[0]}"
-        executed = bool(act.get("executed", True))
+
+        param_error = self._validate_params(functor, params_list)
+        if param_error:
+            return False, None, param_error
+
         parsed = {
             "subject": subject_norm,
             "actionId": aid_raw,
             "functor": functor,
             "parameters": params_list,
-            "executed": executed,
+            "executed": bool(act.get("executed", True)),
         }
         if not subject_known:
             parsed["unknown_subject"] = True
         return True, parsed, ""
 
     def _normalize_params(self, functor: str, params: Any) -> List[str]:
-        # params may be object or list; coerce accordingly
         if isinstance(params, list):
             if functor == "kill" and len(params) == 1:
-                # assume [target] -> add default weapon
                 return [str(params[0]), "gun"]
             return [str(p) for p in params]
         if not isinstance(params, dict):
@@ -140,7 +123,9 @@ class SecretAgentPlanParser:
         if functor == "move_through_guards":
             loc = params.get("location")
             dox = params.get("dox", "dox")
-            return [str(loc)] if loc is not None and dox is None else [str(loc), str(dox)] if loc is not None else []
+            if loc is None:
+                return []
+            return [str(loc)] if dox is None else [str(loc), str(dox)]
         if functor == "pickup":
             return [str(params.get("item", ""))] if "item" in params else []
         if functor == "kill":
@@ -151,11 +136,39 @@ class SecretAgentPlanParser:
             return [str(target), str(weapon)]
         return []
 
+    def _validate_params(self, functor: str, params: List[str]) -> Optional[str]:
+        if functor in ("move", "move_through_guards"):
+            if params[0] not in self.valid_locations:
+                return f"Unknown location {params[0]}"
+        if functor == "kill":
+            if params and (params[0] not in self.valid_characters and params[0] != "mastermind"):
+                return f"Unknown target {params[0]}"
+        if functor == "pickup":
+            item = params[0]
+            if item not in self.valid_items and not (item == "gun" or item.startswith("dox")):
+                return f"Unknown item {params[0]}"
+        return None
+
+    def _normalize_and_check_subject(self, subject: Any) -> Tuple[Any, bool]:
+        subject_norm = self._normalize_subject(subject)
+        has_agent_token = isinstance(subject, str) and ("agent" in subject.lower())
+        subject_known = subject_norm in self.valid_characters or has_agent_token
+        return subject_norm, subject_known
+
     def _normalize_subject(self, subject: Any) -> Any:
         if not isinstance(subject, str):
             return subject
         name = subject.strip()
         return "secret_agent" if "agent" in name.lower() else name
+
+    def _load_json_array(self, text: str) -> Any:
+        try:
+            data = json.loads(text)
+        except Exception as e:
+            return {"error_type": "invalid_json", "error_details": str(e)}
+        if not isinstance(data, list):
+            return {"error_type": "invalid_json", "error_details": "Expected a list of actions"}
+        return data
 
     # -------- constraints --------
     def build_constraints(self, actions: List[Dict[str, Any]], maxstep: Optional[int] = None) -> str:
