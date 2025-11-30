@@ -38,6 +38,7 @@ class WesternConstraintBuilder(ConstraintBuilder):
             else:
                 # use unexec_act to indicate non-executed intentional action
                 lines.append(f"unexec_act({subj}, {functor}, {intention}, {i}).")
+        lines.append(":- not conflict(_,_,_,_,_).")
         return "\n".join(lines)
 
     def _default_intention(self, aid: int, params: List[str], subj: str) -> str:
