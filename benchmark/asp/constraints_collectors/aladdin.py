@@ -16,6 +16,12 @@ class AladdinConstraintsCollector(BaseConstraintsCollector):
             if path.exists():
                 files.append(str(path.resolve()))
 
+        # instance-specific constraints (if any)
+        inst_constraints = self.instance_dir / "constraints"
+        if inst_constraints.exists():
+            for p in sorted(inst_constraints.glob("*.lp")):
+                files.append(str(p.resolve()))
+
         for name in ["instance_init.lp", "init.lp"]:
             path = self.instance_dir / name
             if path.exists():
