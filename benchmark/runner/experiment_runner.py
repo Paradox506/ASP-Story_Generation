@@ -257,7 +257,8 @@ class ExperimentRunner:
         domain_dir.mkdir(parents=True, exist_ok=True)
         instance_dir = None
         has_instance_path = "instances" in set(self.instance_dir.parts)
-        wants_instance_constraints = self.asp_version == "original" or has_instance_path
+        has_instance_files = any((self.instance_dir / name).exists() for name in ["instance.lp", "instance_init.lp"])
+        wants_instance_constraints = self.asp_version == "original" or has_instance_path or has_instance_files
         if wants_instance_constraints:
             instance_dir = dest_dir / "instance_constraints"
             instance_dir.mkdir(parents=True, exist_ok=True)
