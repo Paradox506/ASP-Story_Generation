@@ -90,7 +90,6 @@ class SecretAgentPromptBuilder(BasePromptBuilder):
     def generate_prompt_from_grid(self, grid: List[List[int]]) -> str:
         info = self.parse_grid(grid)
         n = info["size"]
-        prompt = "# Secret Agent Mission Briefing\n\n"
         prompt += "## Mission Overview\n"
         prompt += (
             f"You are a secret agent operating in a {n}x{n} grid-based facility. "
@@ -153,4 +152,8 @@ class SecretAgentPromptBuilder(BasePromptBuilder):
         prompt += "- Obtain the gun\n"
         prompt += "- Kill the mastermind at the guarded location\n"
         prompt += "- Avoid walls and respect guarded entrances (use move_through_guards)\n"
+        prompt += "\n## Output Format\n"
+        prompt += "Return only a JSON array of actions in order, no explanations or additional text.\n"
+        prompt += "Each action must include: subject, actionId, parameters, executed (boolean).\n"
+        prompt += "Do not add commentary; respond with the JSON array only.\n"
         return prompt
