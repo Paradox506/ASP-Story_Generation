@@ -40,6 +40,7 @@ class ExperimentRunner:
         exp_cfg: Optional[ExperimentConfig] = None,
         llm_cfg: Optional[LlmConfig] = None,
         use_author_style: bool = False,
+        response_file_dir: Optional[Path] = None,
     ):
         self.base_dir = base_dir
         self.domains_root = domains_root
@@ -57,6 +58,7 @@ class ExperimentRunner:
         self.max_output_tokens = max_output_tokens
         self.exp_cfg = exp_cfg
         self.llm_cfg = llm_cfg
+        self.response_file_dir = response_file_dir
         # choose instance label: for explicit instances use parent/leaf, otherwise just leaf (e.g., base/original)
         if "instances" in set(instance_dir.parts):
             parts = instance_dir.parts
@@ -315,3 +317,12 @@ class ExperimentRunner:
                     shutil.copy(p, dest_dir / name)
                 except Exception:
                     pass
+        # If running from a response file, also copy any pre-existing instance_constraints next to it
+        if self.response_file_dir:
+            resp_ic = Path(self.response_file_dir) / "instance_constraints"
+            if resp_ic.exists() and resp_ic.is_dir():
+                for src in resp_ic.iterdir():
+                    try:
+                        shutil.copy(src, instance_dir / src.name)
+                    except Exception:
+                        pass

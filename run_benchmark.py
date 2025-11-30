@@ -113,8 +113,11 @@ def main():
         instance_dirs = adapter.default_instance_dirs(base, asp_version_default)
 
     response_text = None
+    response_file_dir = None
     if args.response_file:
-        response_text = Path(args.response_file).read_text()
+        resp_path = Path(args.response_file)
+        response_text = resp_path.read_text()
+        response_file_dir = resp_path.parent
     if args.prompt_only:
         response_text = ""  # force offline flow but skip ASP
 
@@ -173,6 +176,7 @@ def main():
             exp_cfg=exp_cfg,
             llm_cfg=llm_cfg,
             use_author_style=use_author_style,
+            response_file_dir=response_file_dir,
         )
         if args.prompt_only:
             prompt = runner.prompt_gen.build_prompt(domains_root, inst_dir)
