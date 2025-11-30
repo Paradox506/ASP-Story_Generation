@@ -118,6 +118,7 @@ class ExperimentRunner:
                     "llm_raw": llm_result.get("content", "") or llm_result.get("error", ""),
                 }
                 self._persist_result(result, run_id, prompt, llm_raw=None, parse=None, asp=None)
+                self.copy_support_files(run_id)
                 return result
             response_text = llm_result["content"]
             timing = llm_result
@@ -136,6 +137,7 @@ class ExperimentRunner:
                 "offline": offline,
             }
             self._persist_result(result, run_id, prompt, response_text, parse_result, asp=None)
+            self.copy_support_files(run_id)
             return result
 
         # determine maxstep: use configured value if provided, otherwise len(actions)+1
@@ -194,6 +196,7 @@ class ExperimentRunner:
             raw_clingo=self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
             constraints=constraints_text,
         )
+        self.copy_support_files(run_id)
         return result
 
     def _make_client(self, api_key: Optional[str]):
