@@ -13,6 +13,7 @@ from benchmark.config.config_utils import load_api_key
 from benchmark.io.artifact_writer import ArtifactWriter
 from benchmark.config.config_loader import ExperimentConfig, LlmConfig
 import shutil
+import os
 
 
 class ExperimentRunner:
@@ -246,3 +247,24 @@ class ExperimentRunner:
     ) -> None:
         self.writer.write(run_id, result, prompt, llm_raw, parse, asp, raw_clingo=raw_clingo, constraints=constraints)
         self.writer.append_log(run_id, result)
+
+    def copy_support_files(self, run_id: str, include_matrix: bool = False) -> None:
+        """
+        Copy ASP input LP files (and optionally matrix.txt for secret_agent) into the run directory
+        to ease offline verification in prompt-only/response-file modes.
+        """
+        dest_dir = self.writer.ensure_dir(run_id)
+        inputs_dir = dest_dir / "asp_inputs"
+        inputs_dir.mkdir(parents=True, exist_ok=True)
+        for f in self.validator.get_input_files():
+            try:
+                shutil.copy(f, inputs_dir / os.path.basename(f))
+            except Exception:
+                pass
+        if include_matrix and self.domain == "secret_agent":
+            matrix_path = self.instance_dir / "matrix.txt"
+            if matrix_path.exists():
+                try:
+                    shutil.copy(matrix_path, dest_dir / "matrix.txt")
+                except Exception:
+                    pass

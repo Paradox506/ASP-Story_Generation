@@ -158,6 +158,7 @@ def main():
                 "metadata": {"domain": domain, "instance": inst_dir.name, "model": model_name},
             }
             runner._persist_result(result, run_id, prompt, llm_raw=None, parse=None, asp=None)
+            runner.copy_support_files(run_id, include_matrix=(domain == "secret_agent"))
             print(f"--- Prompt saved for {inst_dir} at {run_id} ---")
             print(prompt)
             return result
