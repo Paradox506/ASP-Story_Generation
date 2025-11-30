@@ -127,6 +127,9 @@ class SecretAgentPlanParser:
     def _normalize_params(self, functor: str, params: Any) -> List[str]:
         # params may be object or list; coerce accordingly
         if isinstance(params, list):
+            if functor == "kill" and len(params) == 1:
+                # assume [target] -> add default weapon
+                return [str(params[0]), "gun"]
             return [str(p) for p in params]
         if not isinstance(params, dict):
             return []
