@@ -83,23 +83,23 @@ class ExperimentRunner:
         self.evaluator = None
         if domain == "secret_agent":
             try:
-                from benchmark.evaluators.causal_evaluator import CausalEvaluator
+                from benchmark.evaluators.secret_agent_evaluator import SecretAgentEvaluator
 
-                self.evaluator = CausalEvaluator()
+                self.evaluator = SecretAgentEvaluator()
             except Exception:
                 self.evaluator = None
         elif domain == "western":
             try:
-                from benchmark.evaluators.conflict_evaluator import ConflictEvaluator
+                from benchmark.evaluators.western_evaluator import WesternEvaluator
 
-                self.evaluator = ConflictEvaluator()
+                self.evaluator = WesternEvaluator()
             except Exception:
                 self.evaluator = None
         elif domain == "aladdin":
             try:
-                from benchmark.evaluators.intentionality_evaluator import IntentionalityEvaluator
+                from benchmark.evaluators.aladdin_evaluator import AladdinEvaluator
 
-                self.evaluator = IntentionalityEvaluator()
+                self.evaluator = AladdinEvaluator()
             except Exception:
                 self.evaluator = None
 

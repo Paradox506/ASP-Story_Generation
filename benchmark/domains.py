@@ -3,9 +3,9 @@ from pathlib import Path
 from typing import Callable, List, Optional
 
 from benchmark.prompt_builders.prompt_builder import get_prompt_builder
-from benchmark.evaluators.causal_evaluator import CausalEvaluator
-from benchmark.evaluators.conflict_evaluator import ConflictEvaluator
-from benchmark.evaluators.intentionality_evaluator import IntentionalityEvaluator
+from benchmark.evaluators.secret_agent_evaluator import SecretAgentEvaluator
+from benchmark.evaluators.western_evaluator import WesternEvaluator
+from benchmark.evaluators.aladdin_evaluator import AladdinEvaluator
 
 
 @dataclass
@@ -45,19 +45,19 @@ DOMAIN_ADAPTERS = {
     "aladdin": DomainAdapter(
         name="aladdin",
         prompt_builder=_prompt_builder("aladdin"),
-        evaluator_factory=lambda: IntentionalityEvaluator(),
+        evaluator_factory=lambda: AladdinEvaluator(),
         default_instance_dirs=_default_instances("aladdin"),
     ),
     "western": DomainAdapter(
         name="western",
         prompt_builder=_prompt_builder("western"),
-        evaluator_factory=lambda: ConflictEvaluator(),
+        evaluator_factory=lambda: WesternEvaluator(),
         default_instance_dirs=_default_instances("western"),
     ),
     "secret_agent": DomainAdapter(
         name="secret_agent",
         prompt_builder=_prompt_builder("secret_agent"),
-        evaluator_factory=lambda: CausalEvaluator(),
+        evaluator_factory=lambda: SecretAgentEvaluator(),
         default_instance_dirs=_default_instances("secret_agent"),
     ),
 }

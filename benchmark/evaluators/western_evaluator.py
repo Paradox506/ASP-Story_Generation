@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-class ConflictEvaluator:
+class WesternEvaluator:
     """
     Evaluator for Western conflict planning.
     """
