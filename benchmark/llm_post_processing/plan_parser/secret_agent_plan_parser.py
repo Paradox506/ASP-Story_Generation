@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Dict, List
 
+from benchmark.llm_post_processing.constraint_builder import SecretAgentConstraintBuilder
 from .base_plan_parser import BasePlanParser
-from .secret_agent_constraint_builder import SecretAgentConstraintBuilder
 
 
 class SecretAgentPlanParser(BasePlanParser):

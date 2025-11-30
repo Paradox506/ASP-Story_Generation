@@ -1,7 +1,7 @@
 from typing import Dict, List
 from pathlib import Path
 
-from .aladdin_constraint_builder import AladdinConstraintBuilder
+from benchmark.llm_post_processing.constraint_builder import AladdinConstraintBuilder
 from .base_plan_parser import BasePlanParser
 
 

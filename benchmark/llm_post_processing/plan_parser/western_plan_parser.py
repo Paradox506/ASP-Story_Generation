@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Dict, List
 
+from benchmark.llm_post_processing.constraint_builder import WesternConstraintBuilder
 from .base_plan_parser import BasePlanParser
-from .western_constraint_builder import WesternConstraintBuilder
 
 
 class WesternPlanParser(BasePlanParser):

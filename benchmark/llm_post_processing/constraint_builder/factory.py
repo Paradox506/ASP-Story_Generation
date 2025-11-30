@@ -1,9 +1,9 @@
 from benchmark.asp.action_utils import ActionMapper
 
-from .aladdin_constraint_builder import AladdinConstraintBuilder
-from .secret_agent_constraint_builder import SecretAgentConstraintBuilder
-from .western_constraint_builder import WesternConstraintBuilder
-from .constraint_builder import ConstraintBuilder
+from .aladdin import AladdinConstraintBuilder
+from .secret_agent import SecretAgentConstraintBuilder
+from .western import WesternConstraintBuilder
+from .base import ConstraintBuilder
 
 
 def get_constraint_builder(domain: str, mapper: ActionMapper) -> ConstraintBuilder:

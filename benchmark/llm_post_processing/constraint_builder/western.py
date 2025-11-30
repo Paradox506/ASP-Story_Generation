@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from benchmark.asp.action_utils import ActionMapper
 
-from .constraint_builder import ConstraintBuilder
+from .base import ConstraintBuilder
 
 
 class WesternConstraintBuilder(ConstraintBuilder):

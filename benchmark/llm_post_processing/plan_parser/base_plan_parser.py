@@ -4,8 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from benchmark.asp.action_utils import ActionMapper
-
-from .builder_factory import get_constraint_builder
+from benchmark.llm_post_processing.constraint_builder import get_constraint_builder
 
 
 class BasePlanParser:
