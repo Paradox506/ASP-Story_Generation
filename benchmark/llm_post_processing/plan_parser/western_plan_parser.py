@@ -25,16 +25,20 @@ class WesternPlanParser(BasePlanParser):
                 self.valid_places |= locs
         except Exception:
             pass
-        # also pull characters explicitly declared in instance.lp via character/1
+        # also pull characters explicitly declared in instance.lp via character/1 or role/2
         inst_path = self.instance_dir / "instance.lp"
         if inst_path.exists():
             try:
-                pattern = re.compile(r"character\(\s*([^)]+?)\s*\)\s*\.")
+                pattern_char = re.compile(r"character\(\s*([^)]+?)\s*\)\s*\.")
+                pattern_role = re.compile(r"role\(\s*([^\s,()]+)")
                 for line in inst_path.read_text().splitlines():
-                    m = pattern.search(line)
-                    if m:
-                        for chunk in m.group(1).split(";"):
+                    m_char = pattern_char.search(line)
+                    if m_char:
+                        for chunk in m_char.group(1).split(";"):
                             self.valid_characters.add(chunk.strip())
+                    m_role = pattern_role.search(line)
+                    if m_role:
+                        self.valid_characters.add(m_role.group(1).strip())
             except Exception:
                 pass
 
