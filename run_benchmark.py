@@ -98,12 +98,16 @@ def main():
     use_author_style = args.use_author_parser
 
     base = Path(__file__).parent
+    def _normalize_instance_path(p: Path) -> Path:
+        # If a file is provided (e.g., llm_raw.txt), use its parent directory as the instance dir.
+        return p.parent if p.is_file() else p
+
     if args.instances:
-        instance_dirs = [Path(p) for p in args.instances]
+        instance_dirs = [_normalize_instance_path(Path(p)) for p in args.instances]
     elif args.instance:
-        instance_dirs = [Path(args.instance)]
+        instance_dirs = [_normalize_instance_path(Path(args.instance))]
     elif exp_cfg.instances:
-        instance_dirs = [Path(p) for p in exp_cfg.instances]
+        instance_dirs = [_normalize_instance_path(Path(p)) for p in exp_cfg.instances]
     else:
         adapter = get_adapter(domain)
         instance_dirs = adapter.default_instance_dirs(base, asp_version_default)
@@ -121,10 +125,12 @@ def main():
     tasks = [(idx, m, inst) for idx, (m, inst) in enumerate([(m, inst) for m in models for inst in instance_dirs for _ in range(runs_per_instance)])]
 
     def infer_asp_version(inst_dir: Path, default_version: str) -> str:
-        # If the instance path already indicates base/original, honor it; otherwise use default from config.
+        # Prefer explicit markers; otherwise try to infer from presence of instance files, fallback to default.
         for part in inst_dir.parts[::-1]:
             if part in ("base", "original"):
                 return part
+        if (inst_dir / "instance.lp").exists() or (inst_dir / "instance_init.lp").exists() or "instances" in inst_dir.parts:
+            return "base"
         return default_version
 
     def run_task(seq: int, model_name: str, inst_dir: Path):
