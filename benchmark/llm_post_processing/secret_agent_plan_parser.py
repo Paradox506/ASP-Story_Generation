@@ -88,8 +88,10 @@ class SecretAgentPlanParser:
             if f not in act:
                 return False, None, f"Missing field {f}"
         subject = act["subject"]
+        subject_norm = self._normalize_subject(subject)
+        has_agent_token = isinstance(subject, str) and ("agent" in subject.lower())
         # allow arbitrary subject; treat any subject containing 'agent' as known
-        subject_known = subject in self.valid_characters or ("agent" in subject)
+        subject_known = subject_norm in self.valid_characters or has_agent_token
         aid_raw = str(act["actionId"])
         if aid_raw not in self.ACTION_MAP:
             return False, None, f"Unknown actionId {aid_raw}"
@@ -114,7 +116,7 @@ class SecretAgentPlanParser:
                 return False, None, f"Unknown item {params_list[0]}"
         executed = bool(act.get("executed", True))
         parsed = {
-            "subject": subject,
+            "subject": subject_norm,
             "actionId": aid_raw,
             "functor": functor,
             "parameters": params_list,
@@ -148,6 +150,12 @@ class SecretAgentPlanParser:
             weapon = params.get("weapon", "gun")
             return [str(target), str(weapon)]
         return []
+
+    def _normalize_subject(self, subject: Any) -> Any:
+        if not isinstance(subject, str):
+            return subject
+        name = subject.strip()
+        return "secret_agent" if "agent" in name.lower() else name
 
     # -------- constraints --------
     def build_constraints(self, actions: List[Dict[str, Any]], maxstep: Optional[int] = None) -> str:
