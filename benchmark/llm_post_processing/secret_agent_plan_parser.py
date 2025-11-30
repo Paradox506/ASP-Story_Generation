@@ -104,13 +104,16 @@ class SecretAgentPlanParser:
         if param_error:
             return False, None, param_error
 
+        original_executed = bool(act.get("executed", True))
+
         parsed = {
             "subject": "secret_agent",
             "original_subject": subject,
             "actionId": aid_raw,
             "functor": functor,
             "parameters": params_list,
-            "executed": bool(act.get("executed", True)),
+            "executed": True,  # always treat actions as executed for constraint building
+            "original_executed": original_executed,
         }
         if not subject_known:
             parsed["unknown_subject"] = True
