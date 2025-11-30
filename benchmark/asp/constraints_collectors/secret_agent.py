@@ -9,27 +9,24 @@ class SecretAgentConstraintsCollector(BaseConstraintsCollector):
 
     def collect(self) -> List[str]:
         files: List[str] = []
+        seen = set()
+
+        def add_path(p: Path):
+            rp = str(p.resolve())
+            if rp not in seen and p.exists():
+                seen.add(rp)
+                files.append(rp)
+
         constraints_dir = self.domain_dir / "constraints"
+        for p in sorted(constraints_dir.glob("*.lp")):
+            add_path(p)
 
-        for name in ["domain.lp", "actions.lp", "init.lp", "goal.lp"]:
-            path = constraints_dir / name
-            if path.exists():
-                files.append(str(path.resolve()))
-
-        # instance-specific constraints (if any)
         inst_constraints = self.instance_dir / "constraints"
         if inst_constraints.exists():
             for p in sorted(inst_constraints.glob("*.lp")):
-                files.append(str(p.resolve()))
+                add_path(p)
 
-        for name in ["instance_init.lp", "init.lp"]:
-            path = self.instance_dir / name
-            if path.exists():
-                files.append(str(path.resolve()))
-                break
-
-        inst = self.instance_dir / "instance.lp"
-        if inst.exists():
-            files.append(str(inst.resolve()))
+        for p in sorted(self.instance_dir.glob("*.lp")):
+            add_path(p)
 
         return files

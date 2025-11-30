@@ -255,19 +255,33 @@ class ExperimentRunner:
 
     def copy_support_files(self, run_id: str) -> None:
         """
-        Copy ASP input LP files (and instance-specific extras) into the run directory
-        to ease offline verification in prompt-only/response-file modes.
+        Copy ASP inputs into run directory:
+        - Domain-level constraints -> domain_constraints/
+        - Instance-level constraints -> instance_constraints/
+        - Instance extras (matrix.txt/loyalty.txt/intro.txt) -> run root
         """
         dest_dir = self.writer.ensure_dir(run_id)
-        inputs_dir = dest_dir / "asp_inputs"
-        inputs_dir.mkdir(parents=True, exist_ok=True)
+        domain_dir = dest_dir / "domain_constraints"
+        instance_dir = dest_dir / "instance_constraints"
+        domain_dir.mkdir(parents=True, exist_ok=True)
+        instance_dir.mkdir(parents=True, exist_ok=True)
+
+        def _is_instance_path(p: Path) -> bool:
+            try:
+                p.resolve().relative_to(self.instance_dir.resolve())
+                return True
+            except Exception:
+                return False
+
         for f in self.validator.get_input_files():
             try:
-                dest_name = os.path.basename(f)
+                src = Path(f)
+                dest_name = src.name
+                target_dir = instance_dir if _is_instance_path(src) else domain_dir
                 # avoid collision between base/init and instance init
-                if dest_name == "init.lp" and "base" in f:
+                if dest_name == "init.lp" and not _is_instance_path(src):
                     dest_name = "base_init.lp"
-                shutil.copy(f, inputs_dir / dest_name)
+                shutil.copy(src, target_dir / dest_name)
             except Exception:
                 pass
         # copy instance-specific extras (matrix.txt, loyalty.txt, intro.txt, etc.)
