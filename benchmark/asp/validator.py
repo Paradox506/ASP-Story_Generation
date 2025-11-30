@@ -216,14 +216,32 @@ class ASPValidator:
 
     def _parse_conflict(self, atom: str) -> Dict:
         # conflict(Threatener, ThreatenerIntent, ThreatenedActor, ThreatenedIntent, Action)
-        m = re.match(r'conflict\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^)]+)\)', atom)
-        if not m:
+        if not atom.startswith("conflict(") or not atom.endswith(")"):
             return {}
+        inner = atom[len("conflict(") : -1]
+        parts = []
+        buf = []
+        depth = 0
+        for ch in inner:
+            if ch == "," and depth == 0:
+                parts.append("".join(buf).strip())
+                buf = []
+                continue
+            if ch == "(":
+                depth += 1
+            elif ch == ")":
+                depth = max(0, depth - 1)
+            buf.append(ch)
+        if buf:
+            parts.append("".join(buf).strip())
+        if len(parts) != 5:
+            return {}
+        thr, thr_int, targ, targ_int, act = parts
         return {
-            "threatener": m.group(1),
-            "threatener_intention": m.group(2),
-            "threatened_actor": m.group(3),
-            "threatened_intention": m.group(4),
-            "action": m.group(5),
-            "summary": f"{m.group(1)} (intends {m.group(2)}) threatens {m.group(3)}'s intention {m.group(4)} via {m.group(5)}",
+            "threatener": thr,
+            "threatener_intention": thr_int,
+            "threatened_actor": targ,
+            "threatened_intention": targ_int,
+            "action": act,
+            "summary": f\"{thr} (intends {thr_int}) threatens {targ}'s intention {targ_int} via {act}\",
         }
