@@ -12,6 +12,11 @@ __pycache__/
 # Results / cache
 results/
 benchmark.log
+_results/
+.history/
+.prompts_builder.bak/
+results.bak/
+Can LLMs Generate Good Stories? Insights and Challenges from a Narrative Planning Perspective.pdf
 
 # Local config keys
 config.local.yaml
