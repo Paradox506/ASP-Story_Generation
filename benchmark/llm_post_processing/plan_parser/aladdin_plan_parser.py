@@ -18,21 +18,6 @@ class AladdinPlanParser(BasePlanParser):
                 aliases[p + ch] = ch
         return aliases
 
-    def load_symbols(self):
-        super().load_symbols()
-        # additionally read loyalty.txt in the instance to expand character set
-        loyalty_path = self.instance_dir / "loyalty.txt"
-        if loyalty_path.exists():
-            try:
-                text = loyalty_path.read_text()
-                for line in text.splitlines():
-                    parts = line.replace("(", " ").replace(")", " ").replace(",", " ").split()
-                    for token in parts:
-                        if token:
-                            self.valid_characters.add(token.strip().lower())
-            except Exception:
-                pass
-
     def fill_params(self, aid: int, params: List[str], subj: str) -> List[str]:
         out = params[:]
         if aid == 1 and len(out) == 1:
