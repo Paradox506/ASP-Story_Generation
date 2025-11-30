@@ -5,6 +5,8 @@ from typing import List, Dict, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import sys
+import shlex
 
 from benchmark.runner.experiment_runner import ExperimentRunner
 from benchmark.config.config_loader import load_combined_config, to_experiment_config
@@ -61,6 +63,9 @@ def main():
     parser.add_argument("--use-author-parser", action="store_true", help="Use author-style constraint parser instead of default")
     parser.add_argument("--domains-root", help="Override domains root directory (default: benchmark/domains)")
     args = parser.parse_args()
+
+    command_line = " ".join(shlex.quote(a) for a in [sys.executable, __file__, *sys.argv[1:]])
+    cmd_meta = {"command": command_line, "cwd": str(Path.cwd()), "args": vars(args)}
 
     cfg_path = Path(args.config) if args.config else None
     cfg = load_combined_config(Path("config.default.yaml"), cfg_path)
@@ -161,13 +166,16 @@ def main():
                 "prompt": prompt,
                 "run_id": run_id,
                 "metadata": {"domain": domain, "instance": inst_dir.name, "model": model_name},
+                "invocation": cmd_meta,
             }
             runner._persist_result(result, run_id, prompt, llm_raw=None, parse=None, asp=None)
             runner.copy_support_files(run_id)
             print(f"--- Prompt saved for {inst_dir} at {run_id} ---")
             print(prompt)
             return result
-        return runner.run(response_text=response_text if args.response_file else None, run_seq=seq)
+        result = runner.run(response_text=response_text if args.response_file else None, run_seq=seq)
+        result["invocation"] = cmd_meta
+        return result
 
     if workers and workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as ex:
@@ -180,7 +188,7 @@ def main():
 
     summary = summarize_results(results)
 
-    output_data = {"summary": summary, "runs": results}
+    output_data = {"summary": summary, "runs": results, "invocation": cmd_meta}
 
     if args.output:
         Path(args.output).write_text(json.dumps(output_data, indent=2))
