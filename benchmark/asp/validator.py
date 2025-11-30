@@ -12,6 +12,7 @@ except Exception:  # pragma: no cover
     clingo = None
 
 from benchmark.asp.action_utils import ActionMapper, extract_intention
+from benchmark.asp.constraints_collector import ConstraintsCollector, get_collector
 
 
 class ASPValidator:
@@ -27,6 +28,7 @@ class ASPValidator:
         instance_dir: Path,
         clingo_path: str = "clingo",
         use_clingo_api: bool = False,
+        collector: ConstraintsCollector = None,
     ):
         self.domain = domain
         self.domain_dir = domain_dir
@@ -35,51 +37,14 @@ class ASPValidator:
         self.use_clingo_api = use_clingo_api and clingo is not None
         self.mapper = ActionMapper(domain)
         self.last_stdout: Optional[str] = None
+        self.collector = get_collector(domain, domain_dir, instance_dir, collector)
 
     def get_input_files(self) -> List[str]:
         """
         Return the list of LP files that will be fed to clingo for this validator.
         Useful for persisting alongside run artifacts.
         """
-        return self._collect_files()
-
-    def _collect_files(self) -> List[str]:
-        files: List[str] = []
-        domain_root = self.domain_dir
-        base_dir = domain_root.parent / "base"
-        for name in ["domain.lp", "actions.lp"]:
-            path = (
-                base_dir / name
-                if domain_root.name != "original" and base_dir.exists()
-                else domain_root / name
-            )
-            if path.exists():
-                files.append(str(path.resolve()))
-        # base-level init.lp if present
-        base_init = (
-            base_dir / "init.lp"
-            if domain_root.name != "original" and base_dir.exists()
-            else domain_root / "init.lp"
-        )
-        if base_init.exists():
-            files.append(str(base_init.resolve()))
-        # instance-specific
-        for name in ["instance_init.lp", "init.lp"]:
-            path = self.instance_dir / name
-            if path.exists():
-                files.append(str(path.resolve()))
-                break
-        inst = self.instance_dir / "instance.lp"
-        if inst.exists():
-            files.append(str(inst.resolve()))
-        goal = (
-            base_dir / "goal.lp"
-            if domain_root.name != "original" and base_dir.exists()
-            else self.domain_dir / "goal.lp"
-        )
-        if goal.exists():
-            files.append(str(goal.resolve()))
-        return files
+        return self.collector.collect()
 
     def _constraints_from_actions(self, actions: List[Dict]) -> str:
         lines: List[str] = []
@@ -134,7 +99,7 @@ class ASPValidator:
                 tf.write(asp_constraints)
                 constraint_path = tf.name
 
-        files = self._collect_files() + [constraint_path]
+        files = self.get_input_files() + [constraint_path]
         cmd = [self.clingo_path, *files, "-c", f"maxstep={maxstep}", "--outf=2", "0"]
         proc = subprocess.run(cmd, capture_output=True, text=True)
 
