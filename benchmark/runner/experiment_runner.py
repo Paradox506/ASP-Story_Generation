@@ -340,12 +340,13 @@ class ExperimentRunner:
                 for src in resp_ic.iterdir():
                     try:
                         dest_name = src.name
-                        dest_path = instance_dir / dest_name
-                        # If this is a domain-level init.lp leaking into instance_constraints (e.g., base runs), place it with domain files
                         domain_init = self.domains_root / self.domain / self.asp_version / "constraints" / "init.lp"
-                        if dest_name == "init.lp" and domain_init.exists():
+                        # If init.lp shows up here, treat it as domain init to avoid polluting instance constraints
+                        if dest_name == "init.lp":
                             dest_name = "base_init.lp"
                             dest_path = domain_dir / dest_name
+                        else:
+                            dest_path = instance_dir / dest_name
                         shutil.copy(src, dest_path)
                         collected.append({"source": str(src.resolve()), "dest": str(dest_path.resolve())})
                     except Exception:
