@@ -27,6 +27,8 @@ class BasePlanParser:
                 return atoms
             pattern = re.compile(rf"{predicate}\(\s*([^)]+?)\s*\)\s*\.")
             for line in path.read_text().splitlines():
+                if ":-" in line:
+                    continue
                 m = pattern.search(line)
                 if m:
                     for chunk in m.group(1).split(";"):
