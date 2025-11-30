@@ -172,12 +172,18 @@ def main():
             except ValueError:
                 pass
 
+        inst_dir_for_runner = inst_dir
+        if response_file_dir:
+            resp_ic = response_file_dir / "instance_constraints"
+            if not (inst_dir / "instance.lp").exists() and (resp_ic / "instance.lp").exists():
+                inst_dir_for_runner = resp_ic
+
         runner = ExperimentRunner(
             base_dir=base,
             domains_root=domains_root,
             domain=domain,
             asp_version=asp_version,
-            instance_dir=inst_dir,
+            instance_dir=inst_dir_for_runner,
             model=normalized_model,
             provider=provider,
             clingo_path=clingo_path,
