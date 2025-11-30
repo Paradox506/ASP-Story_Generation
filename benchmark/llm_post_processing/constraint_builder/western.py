@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from benchmark.asp.action_utils import ActionMapper
 
@@ -10,8 +10,9 @@ class WesternConstraintBuilder(ConstraintBuilder):
         super().__init__(mapper)
         self.use_default_intention = use_default_intention
 
-    def build(self, actions: List[Dict]) -> str:
-        lines: List[str] = []
+    def build(self, actions: List[Dict], maxstep: Optional[int] = None) -> str:
+        max_const = maxstep or (len(actions) + 1)
+        lines: List[str] = [f"#const maxstep={max_const}.", "% Western plan constraints"]
         for i, action in enumerate(actions):
             subj = action["subject"]
             aid = action["actionId"]

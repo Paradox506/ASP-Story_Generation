@@ -339,10 +339,10 @@ threaten(Subj, I, C2, dead(Target), heal(Target), dead(Target), T) :- planned_ac
 % No open commitment frame
 unjustified(Subj, FL, I, T) :- justification_needed(Subj, FL, I, T), not justified(Subj, FL, I, T).
 open_commitment_frame(Subj, I) :- unjustified(Subj, FL, I, T).
-:- open_commitment_frame(_, _).
+% :- open_commitment_frame(_, _).
 
 % Non non-executable actions
-:- nonexec_feedback(_, _).
+% :- nonexec_feedback(_, _).
 
 % Plan should contain conflict
 % Conflict happens when either P holds at T, or Act is actually executed
