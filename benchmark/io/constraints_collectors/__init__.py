@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Optional
 
-from benchmark.asp.constraints_collectors.base import BaseConstraintsCollector
-from benchmark.asp.constraints_collectors.secret_agent import SecretAgentConstraintsCollector
-from benchmark.asp.constraints_collectors.western import WesternConstraintsCollector
-from benchmark.asp.constraints_collectors.aladdin import AladdinConstraintsCollector
+from benchmark.io.constraints_collectors.base import BaseConstraintsCollector
+from benchmark.io.constraints_collectors.secret_agent import SecretAgentConstraintsCollector
+from benchmark.io.constraints_collectors.western import WesternConstraintsCollector
+from benchmark.io.constraints_collectors.aladdin import AladdinConstraintsCollector
 
 
 def get_collector(domain: str, domain_dir: Path, instance_dir: Path, collector: Optional[BaseConstraintsCollector] = None) -> BaseConstraintsCollector:

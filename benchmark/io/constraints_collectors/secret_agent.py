@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
 
-from benchmark.asp.constraints_collectors.base import BaseConstraintsCollector
+from benchmark.io.constraints_collectors.base import BaseConstraintsCollector
 
 
 class SecretAgentConstraintsCollector(BaseConstraintsCollector):
