@@ -25,6 +25,18 @@ class WesternPlanParser(BasePlanParser):
                 self.valid_places |= locs
         except Exception:
             pass
+        # also pull characters explicitly declared in instance.lp via character/1
+        inst_path = self.instance_dir / "instance.lp"
+        if inst_path.exists():
+            try:
+                pattern = re.compile(r"character\(\s*([^)]+?)\s*\)\s*\.")
+                for line in inst_path.read_text().splitlines():
+                    m = pattern.search(line)
+                    if m:
+                        for chunk in m.group(1).split(";"):
+                            self.valid_characters.add(chunk.strip())
+            except Exception:
+                pass
 
     def fill_params(self, aid: int, params: List[str], subj: str) -> List[str]:
         out = params[:]
