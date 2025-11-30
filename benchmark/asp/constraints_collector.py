@@ -18,7 +18,7 @@ class ConstraintsCollector:
         raise NotImplementedError
 
 
-class DefaultCollector(ConstraintsCollector):
+class SecretAgentConstraintsCollector(ConstraintsCollector):
     """
     Collector that mirrors the prior ASPValidator _collect_files logic:
     - domain_dir may be base/original variant; if not original, prefer base/ for domain/actions/init/goal.
@@ -73,17 +73,12 @@ class DefaultCollector(ConstraintsCollector):
         return files
 
 
-class SecretAgentConstraintsCollector(DefaultCollector):
-    """Explicit alias for the Secret Agent domain (inherits default behavior)."""
-
-
 def get_collector(domain: str, domain_dir: Path, instance_dir: Path, collector: Optional[ConstraintsCollector] = None) -> ConstraintsCollector:
     """
-    Factory to obtain the proper collector. Domain-specific collectors can be added here.
+    Factory to obtain the proper collector. Currently only the Secret Agent domain is supported.
     """
     if collector is not None:
         return collector
     if domain == "secret_agent":
         return SecretAgentConstraintsCollector(domain_dir, instance_dir)
-    # Fallback to generic behavior for other domains.
-    return DefaultCollector(domain_dir, instance_dir)
+    raise NotImplementedError(f"Constraints collector not implemented for domain: {domain}")
