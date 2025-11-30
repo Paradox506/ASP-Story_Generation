@@ -261,7 +261,11 @@ class ExperimentRunner:
         inputs_dir.mkdir(parents=True, exist_ok=True)
         for f in self.validator.get_input_files():
             try:
-                shutil.copy(f, inputs_dir / os.path.basename(f))
+                dest_name = os.path.basename(f)
+                # avoid collision between base/init and instance init
+                if dest_name == "init.lp" and "base" in f:
+                    dest_name = "base_init.lp"
+                shutil.copy(f, inputs_dir / dest_name)
             except Exception:
                 pass
         # copy instance-specific extras (matrix.txt, loyalty.txt, intro.txt, etc.)
