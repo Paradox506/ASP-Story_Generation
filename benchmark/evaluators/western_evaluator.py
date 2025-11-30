@@ -1,7 +1,8 @@
 from typing import Dict
 
+from benchmark.evaluators.base import BaseEvaluator
 
-class WesternEvaluator:
+class WesternEvaluator(BaseEvaluator):
     """
     Evaluator for Western conflict planning.
     """

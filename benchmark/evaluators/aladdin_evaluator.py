@@ -1,7 +1,9 @@
 from typing import Dict
 
+from benchmark.evaluators.base import BaseEvaluator
 
-class AladdinEvaluator:
+
+class AladdinEvaluator(BaseEvaluator):
     def evaluate(self, asp_result: Dict, parse_result: Dict) -> Dict:
         satisfiable = asp_result.get("satisfiable", False)
         nonexec = asp_result.get("nonexec_feedback", []) or []
