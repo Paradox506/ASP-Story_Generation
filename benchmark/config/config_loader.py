@@ -26,6 +26,7 @@ class ExperimentConfig:
     maxstep: int
     output_dir: str
     workers: int
+    domains_root: str
 
 
 def load_combined_config(default_path: Path, user_path: Optional[Path]) -> Dict:
@@ -50,6 +51,7 @@ def to_experiment_config(cfg: Dict) -> (ExperimentConfig, LlmConfig):
         maxstep=exp.get("maxstep", 12),
         output_dir=exp.get("output_dir", "results"),
         workers=exp.get("workers", 1),
+        domains_root=cfg.get("domains_root", "benchmark/domains"),
     )
     llm = LlmConfig(
         provider=llm_cfg.get("provider", "openrouter"),

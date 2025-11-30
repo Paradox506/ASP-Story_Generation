@@ -37,7 +37,7 @@ class SecretAgentPlanParser:
     def _load_symbols(self) -> None:
         # pull characters/locations/items from instance/domain files
         files = [
-            self.domain_dir / "domain.lp",
+            self.domain_dir / "constraints" / "domain.lp",
             self.instance_dir / "instance.lp",
             self.instance_dir / "instance_init.lp",
         ]

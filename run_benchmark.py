@@ -59,6 +59,7 @@ def main():
     parser.add_argument("--provider", choices=["openrouter", "openai", "anthropic"], help="LLM provider")
     parser.add_argument("--prompt-only", action="store_true", help="Only build prompts without calling LLM/ASP (will be persisted)")
     parser.add_argument("--use-author-parser", action="store_true", help="Use author-style constraint parser instead of default")
+    parser.add_argument("--domains-root", help="Override domains root directory (default: benchmark/domains)")
     args = parser.parse_args()
 
     cfg_path = Path(args.config) if args.config else None
@@ -81,6 +82,9 @@ def main():
     maxstep = args.maxstep or exp_cfg.maxstep
     output_dir = Path(args.output_dir or exp_cfg.output_dir)
     workers = args.workers or exp_cfg.workers
+    domains_root = Path(args.domains_root or cfg.get("domains_root", exp_cfg.domains_root))
+    if not domains_root.is_absolute():
+        domains_root = Path(__file__).parent / domains_root
     model_max_tokens_map = llm_cfg.model_max_tokens or {}
     model_max_map = llm_cfg.model_max_output_tokens or {}
     domain_max_map = llm_cfg.domain_max_output_tokens or {}
@@ -131,6 +135,7 @@ def main():
         asp_version = infer_asp_version(inst_dir, exp_cfg.asp_version)
         runner = ExperimentRunner(
             base_dir=base,
+            domains_root=domains_root,
             domain=domain,
             asp_version=asp_version,
             instance_dir=inst_dir,
@@ -148,7 +153,7 @@ def main():
             use_author_style=use_author_style,
         )
         if args.prompt_only:
-            prompt = runner.prompt_gen.build_prompt(base, inst_dir)
+            prompt = runner.prompt_gen.build_prompt(domains_root, inst_dir)
             run_id = f"{run_id_base}_prompt_only/run_{seq:04d}"
             result = {
                 "stage": "prompt_only",

@@ -12,7 +12,7 @@ class AladdinPromptBuilder(BasePromptBuilder):
             if loyalty_path.exists():
                 loyalty_text = loyalty_path.read_text().strip()
         else:
-            loyalty_path = base_dir / self.domain / self.asp_version / "loyalty.txt"
+            loyalty_path = base_dir / self.domain / self.asp_version / "prompts" / "loyalty.txt"
             if loyalty_path.exists():
                 loyalty_text = loyalty_path.read_text().strip()
 

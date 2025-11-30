@@ -147,8 +147,9 @@ class BasePlanParser:
                         atoms.add(chunk.strip())
             return atoms
 
+        constraints_dir = self.domain_dir / "constraints"
         for path in [
-            self.domain_dir / "domain.lp",
+            constraints_dir / "domain.lp",
             self.instance_dir / "instance.lp",
             self.instance_dir / "init.lp",
             self.instance_dir / "instance_init.lp",
@@ -329,10 +330,9 @@ class SecretAgentPlanParser(BasePlanParser):
 class WesternPlanParser(BasePlanParser):
     def load_symbols(self):
         super().load_symbols()
-        # additionally parse map locations from benchmark/prompts/western/2map.txt
+        # additionally parse map locations from domains-based western prompts if available
         try:
-            repo_root = self.domain_dir.parent.parent
-            map_path = repo_root / "benchmark" / "prompts" / "western" / "base" / "2map.txt"
+            map_path = self.domain_dir / "prompts" / "2map.txt"
             if map_path.exists():
                 import re
 

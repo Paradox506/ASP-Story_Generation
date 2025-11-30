@@ -10,6 +10,8 @@ experiment:
   output_dir: results
   workers: 1
 
+domains_root: benchmark/domains
+
 asp:
   clingo_path: clingo
 

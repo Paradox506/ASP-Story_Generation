@@ -24,6 +24,7 @@ class ExperimentRunner:
     def __init__(
         self,
         base_dir: Path,
+        domains_root: Path,
         domain: str,
         asp_version: str,
         instance_dir: Path,
@@ -41,6 +42,7 @@ class ExperimentRunner:
         use_author_style: bool = False,
     ):
         self.base_dir = base_dir
+        self.domains_root = domains_root
         self.domain = domain
         self.asp_version = asp_version
         self.instance_dir = instance_dir
@@ -62,7 +64,7 @@ class ExperimentRunner:
         else:
             self.instance_label = instance_dir.name
 
-        domain_dir = base_dir / domain / asp_version
+        domain_dir = domains_root / domain / asp_version
         self.writer = ArtifactWriter(
             output_dir,
             domain,
@@ -98,7 +100,7 @@ class ExperimentRunner:
 
     def run(self, response_text: Optional[str] = None, run_seq: int = 0) -> Dict:
         offline = response_text is not None
-        prompt = self.prompt_gen.build_prompt(self.base_dir, self.instance_dir)
+        prompt = self.prompt_gen.build_prompt(self.domains_root, self.instance_dir)
         base_id = self.run_id_override or datetime.now(ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d_%H-%M-%S_%Z")
         if offline:
             base_id = f"{base_id}_response_file"

@@ -10,11 +10,11 @@ class BasePromptBuilder:
         self.asp_version = asp_version
 
     def build_prompt(self, base_dir: Path, instance_dir: Optional[Path] = None) -> str:
-        prompt_path = base_dir / self.domain / self.asp_version / "prompt.txt"
+        prompt_path = base_dir / self.domain / self.asp_version / "prompts" / "prompt.txt"
         if prompt_path.exists():
             prompt_text = prompt_path.read_text()
         else:
-            prompt_text = (base_dir / self.domain / "base" / "prompt.txt").read_text()
+            prompt_text = (base_dir / self.domain / "base" / "prompts" / "prompt.txt").read_text()
         if instance_dir:
             prompt_text = self.augment_prompt(prompt_text, base_dir, instance_dir)
         return prompt_text
