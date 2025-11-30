@@ -88,8 +88,8 @@ class SecretAgentPlanParser:
             if f not in act:
                 return False, None, f"Missing field {f}"
         subject = act["subject"]
-        if subject not in self.valid_characters:
-            return False, None, f"Unknown subject {subject}"
+        # allow arbitrary subject; note unknown subjects for downstream if needed
+        subject_known = subject in self.valid_characters
         aid_raw = str(act["actionId"])
         if aid_raw not in self.ACTION_MAP:
             return False, None, f"Unknown actionId {aid_raw}"
@@ -118,6 +118,8 @@ class SecretAgentPlanParser:
             "parameters": params_list,
             "executed": executed,
         }
+        if not subject_known:
+            parsed["unknown_subject"] = True
         return True, parsed, ""
 
     def _normalize_params(self, functor: str, params: Any) -> List[str]:
