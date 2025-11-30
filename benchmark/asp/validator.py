@@ -55,6 +55,14 @@ class ASPValidator:
             )
             if path.exists():
                 files.append(str(path.resolve()))
+        # base-level init.lp if present
+        base_init = (
+            base_dir / "init.lp"
+            if domain_root.name != "original" and base_dir.exists()
+            else domain_root / "init.lp"
+        )
+        if base_init.exists():
+            files.append(str(base_init.resolve()))
         # instance-specific
         for name in ["instance_init.lp", "init.lp"]:
             path = self.instance_dir / name
