@@ -88,8 +88,8 @@ class SecretAgentPlanParser:
             if f not in act:
                 return False, None, f"Missing field {f}"
         subject = act["subject"]
-        # allow arbitrary subject; note unknown subjects for downstream if needed
-        subject_known = subject in self.valid_characters
+        # allow arbitrary subject; treat any subject containing 'agent' as known
+        subject_known = subject in self.valid_characters or ("agent" in subject)
         aid_raw = str(act["actionId"])
         if aid_raw not in self.ACTION_MAP:
             return False, None, f"Unknown actionId {aid_raw}"
