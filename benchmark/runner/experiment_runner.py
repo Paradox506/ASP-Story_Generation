@@ -289,14 +289,22 @@ class ExperimentRunner:
         domain_dir.mkdir(parents=True, exist_ok=True)
         instance_dir = dest_dir / "instance_constraints"
         instance_dir.mkdir(parents=True, exist_ok=True)
+        domain_root_dir = (self.domains_root / self.domain / self.asp_version).resolve()
+        inst_root_dir = self.instance_dir.resolve()
         collected = []
 
         def _is_instance_path(p: Path) -> bool:
+            rp = p.resolve()
             try:
-                p.resolve().relative_to(self.instance_dir.resolve())
-                return True
+                rp.relative_to(inst_root_dir)
             except Exception:
                 return False
+            # Exclude domain-root files even if instance_dir equals domain_root (e.g., base runs)
+            try:
+                rp.relative_to(domain_root_dir)
+                return False
+            except Exception:
+                return True
 
         for f in self.validator.get_input_files():
             try:
