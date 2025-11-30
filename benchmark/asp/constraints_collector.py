@@ -19,8 +19,15 @@ class ConstraintsCollector:
 
 
 class DefaultCollector(ConstraintsCollector):
+    """Generic collector placeholder if no domain-specific logic is provided."""
+
+    def collect(self) -> List[str]:
+        raise NotImplementedError
+
+
+class SecretAgentConstraintsCollector(ConstraintsCollector):
     """
-    Default collector that mirrors the prior ASPValidator _collect_files logic:
+    Collector that mirrors the prior ASPValidator _collect_files logic for the Secret Agent domain:
     - domain_dir may be base/original variant; if not original, prefer base/ for domain/actions/init/goal.
     - instance_dir may contain instance_init.lp or init.lp; take the first that exists.
     """
@@ -79,5 +86,7 @@ def get_collector(domain: str, domain_dir: Path, instance_dir: Path, collector: 
     """
     if collector is not None:
         return collector
-    # Currently all domains use the same default behavior; plug in future domain-specific classes if needed.
-    return DefaultCollector(domain_dir, instance_dir)
+    if domain == "secret_agent":
+        return SecretAgentConstraintsCollector(domain_dir, instance_dir)
+    # Fallback to the generic default: currently not implemented; reuse secret_agent logic for other domains.
+    return SecretAgentConstraintsCollector(domain_dir, instance_dir)
