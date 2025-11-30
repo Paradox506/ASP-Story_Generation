@@ -17,11 +17,11 @@ class SecretAgentPlanParser:
         "move": ("move", 1),
         "move_through_guards": ("move_through_guards", 2),
         "pickup": ("pickup", 1),
-        "kill": ("kill", 1),
+        "kill": ("kill", 2),
         "1": ("move", 1),
         "2": ("move_through_guards", 2),
         "3": ("pickup", 1),
-        "4": ("kill", 1),
+        "4": ("kill", 2),
     }
 
     def __init__(self, domain_dir: Path, instance_dir: Path):
@@ -105,7 +105,7 @@ class SecretAgentPlanParser:
                 return False, None, f"Unknown location {params_list[0]}"
         if functor == "kill":
             # target could be mastermind or other character; accept any character
-            if params_list[0] not in self.valid_characters and params_list[0] != "mastermind":
+            if params_list and (params_list[0] not in self.valid_characters and params_list[0] != "mastermind"):
                 return False, None, f"Unknown target {params_list[0]}"
         if functor == "pickup":
             item = params_list[0]
@@ -139,7 +139,11 @@ class SecretAgentPlanParser:
         if functor == "pickup":
             return [str(params.get("item", ""))] if "item" in params else []
         if functor == "kill":
-            return [str(params.get("target", ""))] if "target" in params else []
+            target = params.get("target")
+            if target is None:
+                return []
+            weapon = params.get("weapon", "gun")
+            return [str(target), str(weapon)]
         return []
 
     # -------- constraints --------
@@ -159,8 +163,10 @@ class SecretAgentPlanParser:
     def _to_functor(self, act: Dict[str, Any]) -> str:
         functor = act["functor"]
         params = act["parameters"]
-        if functor in ("move", "pickup", "kill") and len(params) == 1:
+        if functor in ("move", "pickup") and len(params) == 1:
             return f"{functor}({params[0]})"
+        if functor == "kill" and len(params) >= 2:
+            return f"{functor}({params[0]},{params[1]})"
         if functor == "move_through_guards" and len(params) >= 2:
             return f"{functor}({params[0]},{params[1]})"
         # fallback
