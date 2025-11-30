@@ -1,12 +1,10 @@
 from typing import Any, Dict, List, Optional
 
-from benchmark.asp.action_utils import ActionMapper
-
 from .base import ConstraintBuilder
 
 
 class SecretAgentConstraintBuilder(ConstraintBuilder):
-    def __init__(self, mapper: ActionMapper):
+    def __init__(self, mapper):  # mapper unused, kept for interface compatibility
         super().__init__(mapper)
 
     def build(self, actions: List[Dict], maxstep: Optional[int] = None) -> str:
@@ -23,7 +21,7 @@ class SecretAgentConstraintBuilder(ConstraintBuilder):
         return "\n".join(lines) + "\n"
 
     def _to_functor(self, action: Dict[str, Any]) -> str:
-        functor = action["functor"] if "functor" in action else self.mapper.to_asp_functor(action["actionId"], action.get("parameters", []))
+        functor = action.get("functor")
         params = action.get("parameters", [])
         if functor in ("move", "pickup") and len(params) == 1:
             return f"{functor}({params[0]})"
@@ -31,10 +29,7 @@ class SecretAgentConstraintBuilder(ConstraintBuilder):
             return f"{functor}({params[0]},{params[1]})"
         if functor == "move_through_guards" and len(params) >= 2:
             return f"{functor}({params[0]},{params[1]})"
-        # fallback to mapper
-        aid = action.get("actionId")
-        try:
-            aid_int = int(aid)
-        except Exception:
-            aid_int = 0
-        return self.mapper.to_asp_functor(aid_int, params)
+        if functor and params:
+            joined = ",".join(str(p) for p in params)
+            return f"{functor}({joined})"
+        return str(functor) if functor else "act"
