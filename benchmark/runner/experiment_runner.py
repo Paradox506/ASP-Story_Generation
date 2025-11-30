@@ -257,16 +257,20 @@ class ExperimentRunner:
         """
         Copy ASP inputs into run directory:
         - Domain-level constraints -> domain_constraints/
-        - Instance-level constraints -> instance_constraints/
+        - Instance-level constraints -> instance_constraints/ (skipped when asp_version is base)
         - Instance extras (matrix.txt/loyalty.txt/intro.txt) -> run root
         """
         dest_dir = self.writer.ensure_dir(run_id)
         domain_dir = dest_dir / "domain_constraints"
-        instance_dir = dest_dir / "instance_constraints"
         domain_dir.mkdir(parents=True, exist_ok=True)
-        instance_dir.mkdir(parents=True, exist_ok=True)
+        instance_dir = None
+        if self.asp_version != "base":
+            instance_dir = dest_dir / "instance_constraints"
+            instance_dir.mkdir(parents=True, exist_ok=True)
 
         def _is_instance_path(p: Path) -> bool:
+            if self.asp_version == "base" or instance_dir is None:
+                return False
             try:
                 p.resolve().relative_to(self.instance_dir.resolve())
                 return True
