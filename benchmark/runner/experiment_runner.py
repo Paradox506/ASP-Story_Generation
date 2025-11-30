@@ -8,7 +8,7 @@ import os
 from benchmark.asp.validator import ASPValidator
 from benchmark.llm_clients.openrouter_client import OpenRouterClient
 from benchmark.llm_post_processing.plan_parser import get_plan_parser
-from benchmark.prompts.prompt_builder import get_prompt_builder
+from benchmark.prompt_builders.prompt_builder import get_prompt_builder
 from benchmark.config.config_utils import load_api_key
 from benchmark.io.artifact_writer import ArtifactWriter
 from benchmark.config.config_loader import ExperimentConfig, LlmConfig

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, List, Optional
 
-from benchmark.prompts.prompt_builder import get_prompt_builder
+from benchmark.prompt_builders.prompt_builder import get_prompt_builder
 from benchmark.evaluators.causal_evaluator import CausalEvaluator
 from benchmark.evaluators.conflict_evaluator import ConflictEvaluator
 from benchmark.evaluators.intentionality_evaluator import IntentionalityEvaluator
