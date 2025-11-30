@@ -90,70 +90,78 @@ class SecretAgentPromptBuilder(BasePromptBuilder):
     def generate_prompt_from_grid(self, grid: List[List[int]]) -> str:
         info = self.parse_grid(grid)
         n = info["size"]
-        prompt += "## Mission Overview\n"
-        prompt += (
+        lines: List[str] = []
+        lines.append("# Secret Agent Mission Briefing\n")
+        lines.append("## Mission Overview\n")
+        lines.append(
             f"You are a secret agent operating in a {n}x{n} grid-based facility. "
             "Your mission is to infiltrate the facility, gather intelligence documents, "
-            "obtain the gun, and kill the mastermind.\n\n"
+            "obtain the gun, and kill the mastermind.\n"
         )
-        prompt += "## Initial State\n\n"
-        prompt += f"- **Your starting location**: {self.location_name(info['agent_start'])}\n"
-        prompt += f"- **Mastermind's location**: {self.location_name(info['mastermind_location'])}\n"
+        lines.append("## Initial State\n")
+        lines.append(f"- **Your starting location**: {self.location_name(info['agent_start'])}")
+        lines.append(f"- **Mastermind's location**: {self.location_name(info['mastermind_location'])}")
         if info["gun_location"]:
-            prompt += f"- **Gun location**: {self.location_name(info['gun_location'])}\n"
+            lines.append(f"- **Gun location**: {self.location_name(info['gun_location'])}")
         else:
-            prompt += "- **Gun location**: Not present in this map\n"
+            lines.append("- **Gun location**: Not present in this map")
         if info["dox_locations"]:
-            prompt += f"- **Document fragments**: {len(info['dox_locations'])} fragment(s) to collect\n"
+            lines.append(f"- **Document fragments**: {len(info['dox_locations'])} fragment(s) to collect")
             for idx, loc in enumerate(info["dox_locations"]):
-                prompt += f"  - dox{idx} is at {self.location_name(loc)}\n"
+                lines.append(f"  - dox{idx} is at {self.location_name(loc)}")
         else:
-            prompt += "- **Document fragments**: None present\n"
-        prompt += "\n"
-        prompt += "## Movement Rules\n\n"
+            lines.append("- **Document fragments**: None present")
+        lines.append("")
+        lines.append("## Movement Rules")
         conns = self.generate_connections(grid)
-        prompt += f"You can move between {len(conns)} pairs of adjacent locations:\n\n"
+        lines.append(f"You can move between {len(conns)} pairs of adjacent locations:")
         for a, b in conns:
-            prompt += f"- You can move from {a} to {b}\n"
-        prompt += "\n"
-        prompt += "## Available Actions\n\n"
-        prompt += "You can perform the following actions. Each action has specific requirements:\n\n"
-        prompt += "### 1. move(location)\n"
-        prompt += "- **Description**: Move to an adjacent location\n"
-        prompt += "- **Parameter**: `location` - the target location to move to\n"
-        prompt += "- **Requirements**:\n"
-        prompt += "  - The target location must be directly connected to your current location\n"
-        prompt += "  - The connection must exist in the Movement Rules above\n"
-        prompt += "- **Example**: `move(l0_1)`\n\n"
-        prompt += "### 2. move_through_guards(location, dox)\n"
-        prompt += "- **Description**: Move through guarded entrance by presenting assembled dox\n"
-        prompt += "- **Parameters**:\n"
-        prompt += "  - `location` - the target guarded location\n"
-        prompt += "  - `dox` - the assembled document to present to guards\n"
-        prompt += "- **Requirements**:\n"
-        prompt += "  - You must have the assembled dox (all fragments collected)\n"
-        prompt += "  - The target location must be accessible through a guarded connection\n"
-        prompt += "- **Example**: `move_through_guards(l9_9, dox)`\n\n"
-        prompt += "### 3. pickup(item)\n"
-        prompt += "- **Description**: Pick up an item at your current location\n"
-        prompt += "- **Parameter**: `item` - the item to pick up (gun or dox fragment)\n"
-        prompt += "- **Requirements**:\n"
-        prompt += "  - The item must be at your current location\n"
-        prompt += "  - Valid items: gun, dox0, dox1, etc.\n\n"
-        prompt += "### 4. kill(target)\n"
-        prompt += "- **Description**: Kill a target\n"
-        prompt += "- **Parameter**: `target` - the mastermind (or a guard if necessary)\n"
-        prompt += "- **Requirements**:\n"
-        prompt += "  - You must possess the gun\n"
-        prompt += "  - You must be at the same location as the target\n"
-        prompt += "- **Effects**: Target is eliminated\n\n"
-        prompt += "## Goals\n\n"
-        prompt += "- Collect all document fragments and assemble the dox\n"
-        prompt += "- Obtain the gun\n"
-        prompt += "- Kill the mastermind at the guarded location\n"
-        prompt += "- Avoid walls and respect guarded entrances (use move_through_guards)\n"
-        prompt += "\n## Output Format\n"
-        prompt += "Return only a JSON array of actions in order, no explanations or additional text.\n"
-        prompt += "Each action must include: subject, actionId, parameters, executed (boolean).\n"
-        prompt += "Do not add commentary; respond with the JSON array only.\n"
-        return prompt
+            lines.append(f"- You can move from {a} to {b}")
+        lines.append("")
+        lines.append("## Available Actions")
+        lines.append("You can perform the following actions. Each action has specific requirements:")
+        lines.append("")
+        lines.append("### 1. move(location)")
+        lines.append("- Description: Move to an adjacent location")
+        lines.append("- Parameter: `location` - the target location to move to")
+        lines.append("- Requirements:")
+        lines.append("  - The target location must be directly connected to your current location")
+        lines.append("  - The connection must exist in the Movement Rules above")
+        lines.append("- Example: `move(l0_1)`")
+        lines.append("")
+        lines.append("### 2. move_through_guards(location, dox)")
+        lines.append("- Description: Move through guarded entrance by presenting assembled dox")
+        lines.append("- Parameters:")
+        lines.append("  - `location` - the target guarded location")
+        lines.append("  - `dox` - the assembled document to present to guards")
+        lines.append("- Requirements:")
+        lines.append("  - You must have the assembled dox (all fragments collected)")
+        lines.append("  - The target location must be accessible through a guarded connection")
+        lines.append("- Example: `move_through_guards(l9_9, dox)`")
+        lines.append("")
+        lines.append("### 3. pickup(item)")
+        lines.append("- Description: Pick up an item at your current location")
+        lines.append("- Parameter: `item` - the item to pick up (gun or dox fragment)")
+        lines.append("- Requirements:")
+        lines.append("  - The item must be at your current location")
+        lines.append("  - Valid items: gun, dox0, dox1, etc.")
+        lines.append("")
+        lines.append("### 4. kill(target)")
+        lines.append("- Description: Kill a target")
+        lines.append("- Parameter: `target` - the mastermind (or a guard if necessary)")
+        lines.append("- Requirements:")
+        lines.append("  - You must possess the gun")
+        lines.append("  - You must be at the same location as the target")
+        lines.append("- Effects: Target is eliminated")
+        lines.append("")
+        lines.append("## Goals")
+        lines.append("- Collect all document fragments and assemble the dox")
+        lines.append("- Obtain the gun")
+        lines.append("- Kill the mastermind at the guarded location")
+        lines.append("- Avoid walls and respect guarded entrances (use move_through_guards)")
+        lines.append("")
+        lines.append("## Output Format")
+        lines.append("Return only a JSON array of actions in order, no explanations or additional text.")
+        lines.append("Each action must include: subject, actionId, parameters, executed (boolean).")
+        lines.append("Do not add commentary; respond with the JSON array only.")
+        return "\n".join(lines) + "\n"
