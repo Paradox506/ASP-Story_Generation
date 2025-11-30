@@ -10,6 +10,22 @@ class AladdinPlanParser(BasePlanParser):
         super().__init__(domain, domain_dir, instance_dir)
         self.builder = AladdinConstraintBuilder(self.mapper)
 
+    def load_symbols(self):
+        super().load_symbols()
+        # Also accept characters that appear as the first argument of role/2 in the instance constraints
+        inst_path = self.instance_dir / "instance.lp"
+        if inst_path.exists():
+            try:
+                import re
+
+                pat = re.compile(r"role\(\s*([^\s,()]+)")
+                for line in inst_path.read_text().splitlines():
+                    m = pat.search(line)
+                    if m:
+                        self.valid_characters.add(m.group(1).strip())
+            except Exception:
+                pass
+
     def build_aliases(self) -> Dict[str, str]:
         aliases: Dict[str, str] = {}
         prefixes = ["king ", "princess ", "knight ", "dragon ", "lamp spirit "]
