@@ -243,5 +243,5 @@ class ASPValidator:
             "threatened_actor": targ,
             "threatened_intention": targ_int,
             "action": act,
-            "summary": f\"{thr} (intends {thr_int}) threatens {targ}'s intention {targ_int} via {act}\",
+            "summary": f"{thr} (intends {thr_int}) threatens {targ}'s intention {targ_int} via {act}",
         }
