@@ -145,53 +145,83 @@ class ExperimentRunner:
         # determine maxstep: use configured value if provided, otherwise len(actions)+1
         effective_maxstep = self.maxstep or (len(parse_result["actions"]) + 1)
 
-        constraints_text = self.parser.build_constraints(parse_result["actions"], maxstep=effective_maxstep)
-        # persist constraints early so we can reuse the file for clingo input
-        constraints_path = self.writer.ensure_dir(run_id) / f"{self.domain}_NarrPlan.lp"
-        constraints_path.write_text(constraints_text)
-        asp_result = self.validator.validate_plan(
-            parse_result["actions"],
-            maxstep=effective_maxstep,
-            constraints_text=constraints_text,
-            constraints_path=str(constraints_path),
-        )
+        try:
+            constraints_text = self.parser.build_constraints(parse_result["actions"], maxstep=effective_maxstep)
+            # persist constraints early so we can reuse the file for clingo input
+            constraints_path = self.writer.ensure_dir(run_id) / f"{self.domain}_NarrPlan.lp"
+            constraints_path.write_text(constraints_text)
+            asp_result = self.validator.validate_plan(
+                parse_result["actions"],
+                maxstep=effective_maxstep,
+                constraints_text=constraints_text,
+                constraints_path=str(constraints_path),
+            )
 
-        evaluation = None
-        if self.evaluator:
-            expected_conflicts = 0
-            if self.domain == "western":
-                expected_conflicts = self._expected_conflicts()
-                evaluation = self.evaluator.evaluate(asp_result, parse_result, expected_conflicts=expected_conflicts)
-            else:
-                evaluation = self.evaluator.evaluate(asp_result, parse_result)
+            evaluation = None
+            if self.evaluator:
+                expected_conflicts = 0
+                if self.domain == "western":
+                    expected_conflicts = self._expected_conflicts()
+                    evaluation = self.evaluator.evaluate(asp_result, parse_result, expected_conflicts=expected_conflicts)
+                else:
+                    evaluation = self.evaluator.evaluate(asp_result, parse_result)
 
-        result = {
-            "stage": "complete",
-            "success": True,
-            "prompt": prompt,
-            "llm_timing": timing,
-            "llm_raw": response_text,
-            "parse": parse_result,
-            "asp": asp_result,
-            "clingo_stdout": self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
-            "run_id": run_id,
-            "metadata": self._metadata(),
-            "offline": offline,
-            "offline": offline,
-            "evaluation": evaluation,
-        }
-        self._persist_result(
-            result,
-            run_id,
-            prompt,
-            llm_raw=response_text,
-            parse=parse_result,
-            asp=asp_result,
-            raw_clingo=self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
-            constraints=constraints_text,
-        )
-        self.copy_support_files(run_id)
-        return result
+            result = {
+                "stage": "complete",
+                "success": True,
+                "prompt": prompt,
+                "llm_timing": timing,
+                "llm_raw": response_text,
+                "parse": parse_result,
+                "asp": asp_result,
+                "clingo_stdout": self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
+                "run_id": run_id,
+                "metadata": self._metadata(),
+                "offline": offline,
+                "offline": offline,
+                "evaluation": evaluation,
+            }
+            self._persist_result(
+                result,
+                run_id,
+                prompt,
+                llm_raw=response_text,
+                parse=parse_result,
+                asp=asp_result,
+                raw_clingo=self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
+                constraints=constraints_text,
+            )
+            self.copy_support_files(run_id)
+            return result
+        except Exception as e:
+            error_result = {
+                "stage": "error",
+                "success": False,
+                "error": str(e),
+                "run_id": run_id,
+                "metadata": self._metadata(),
+                "prompt": prompt,
+                "llm_raw": response_text,
+                "parse": parse_result,
+                "offline": offline,
+                "llm_timing": timing,
+            }
+            self._persist_result(
+                error_result,
+                run_id,
+                prompt,
+                llm_raw=response_text,
+                parse=parse_result,
+                asp=None,
+                raw_clingo=None,
+                constraints=None,
+            )
+            # still try to copy support files for debugging
+            try:
+                self.copy_support_files(run_id)
+            except Exception:
+                pass
+            return error_result
 
     def _make_client(self, api_key: Optional[str]):
         if self.provider == "openrouter":
