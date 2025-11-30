@@ -69,7 +69,34 @@ class WesternPlanParser(BasePlanParser):
             return False
         return True
 
+    def normalize_intention(self, intention: str, subj: str) -> str:
+        """Map free-form intention to a valid western intention."""
+        if not intention:
+            return ""
+        intent = intention.strip().lower()
+        # allow formats like "alive(agent_0)" / "dead(agent_1)" / "possessed_by(meds,agent_1)"
+        def _wrap(name: str) -> str:
+            return name.strip()
+
+        # direct passthrough if already valid
+        if intent.startswith("alive(") or intent.startswith("dead(") or intent.startswith("possessed_by("):
+            return intent
+        # loose matches
+        for ch in self.valid_characters:
+            if ch in intent:
+                if "dead" in intent:
+                    return f"dead({ch})"
+                if "alive" in intent:
+                    return f"alive({ch})"
+        if "possess" in intent or "med" in intent:
+            return f"possessed_by(meds,{subj})"
+        return ""
+
     def build_constraints(self, actions: List[Dict], maxstep: int = None) -> str:
+        # normalize intentions on actions to ensure they are valid
+        for act in actions:
+            raw_intent = act.get("intention") or ""
+            act["normalized_intention"] = self.normalize_intention(raw_intent, act.get("subject", ""))
         try:
             return self.builder.build(actions, maxstep=maxstep)
         except TypeError:

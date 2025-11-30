@@ -25,6 +25,8 @@ class WesternConstraintBuilder(ConstraintBuilder):
             if aid == 6:
                 continue
             intention = action.get("intention") or None
+            if hasattr(action, "get") and "normalized_intention" in action:
+                intention = action.get("normalized_intention") or intention
             if not intention and self.use_default_intention:
                 intention = self._default_intention(aid, params, subj)
             if not intention:
