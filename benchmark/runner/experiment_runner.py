@@ -289,6 +289,7 @@ class ExperimentRunner:
         domain_dir.mkdir(parents=True, exist_ok=True)
         instance_dir = dest_dir / "instance_constraints"
         instance_dir.mkdir(parents=True, exist_ok=True)
+        collected = []
 
         def _is_instance_path(p: Path) -> bool:
             try:
@@ -305,7 +306,9 @@ class ExperimentRunner:
                 # avoid collision between base/init and instance init
                 if dest_name == "init.lp" and not _is_instance_path(src):
                     dest_name = "base_init.lp"
-                shutil.copy(src, target_dir / dest_name)
+                dest_path = target_dir / dest_name
+                shutil.copy(src, dest_path)
+                collected.append({"source": str(src.resolve()), "dest": str(dest_path.resolve())})
             except Exception:
                 pass
         # copy instance-specific extras (matrix.txt, loyalty.txt, intro.txt, etc.)
@@ -314,7 +317,9 @@ class ExperimentRunner:
             p = self.instance_dir / name
             if p.exists():
                 try:
-                    shutil.copy(p, dest_dir / name)
+                    dest_path = dest_dir / name
+                    shutil.copy(p, dest_path)
+                    collected.append({"source": str(p.resolve()), "dest": str(dest_path.resolve())})
                 except Exception:
                     pass
         # If running from a response file, also copy any pre-existing instance_constraints next to it
@@ -323,6 +328,15 @@ class ExperimentRunner:
             if resp_ic.exists() and resp_ic.is_dir():
                 for src in resp_ic.iterdir():
                     try:
-                        shutil.copy(src, instance_dir / src.name)
+                        dest_path = instance_dir / src.name
+                        shutil.copy(src, dest_path)
+                        collected.append({"source": str(src.resolve()), "dest": str(dest_path.resolve())})
                     except Exception:
                         pass
+
+        # persist collection log
+        collect_path = dest_dir / "collect.json"
+        try:
+            collect_path.write_text(json.dumps(collected, indent=2))
+        except Exception:
+            pass
