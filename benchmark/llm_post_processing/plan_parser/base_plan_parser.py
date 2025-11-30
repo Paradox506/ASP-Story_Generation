@@ -69,6 +69,9 @@ class BasePlanParser:
 
     def parse(self, llm_output: str) -> Dict:
         result: Dict = {"raw_output": llm_output, "success": False}
+        result["valid_characters"] = sorted(self.valid_characters)
+        result["valid_places"] = sorted(self.valid_places)
+        result["valid_objects"] = sorted(self.valid_objects)
         json_str = self.extract_json(llm_output)
         try:
             data = json.loads(json_str)
