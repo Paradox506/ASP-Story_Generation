@@ -138,13 +138,24 @@ def main():
         if mtok is None:
             mtok = model_max_tokens_map.get(model_name)
         asp_version = infer_asp_version(inst_dir, exp_cfg.asp_version)
+
+        def _normalize_model_for_provider(name: str, provider: str) -> str:
+            if provider == "openai":
+                if name == "openai/o1":
+                    return "o1"
+                if name == "openai/o1-mini":
+                    return "o1-mini"
+            return name
+
+        normalized_model = _normalize_model_for_provider(model_name, provider)
+
         runner = ExperimentRunner(
             base_dir=base,
             domains_root=domains_root,
             domain=domain,
             asp_version=asp_version,
             instance_dir=inst_dir,
-            model=model_name,
+            model=normalized_model,
             provider=provider,
             clingo_path=clingo_path,
             maxstep=maxstep,
