@@ -108,7 +108,9 @@ class SecretAgentPlanParser:
             if params_list[0] not in self.valid_characters and params_list[0] != "mastermind":
                 return False, None, f"Unknown target {params_list[0]}"
         if functor == "pickup":
-            if params_list[0] not in self.valid_items:
+            item = params_list[0]
+            # allow gun and dox* even if not enumerated in objects
+            if item not in self.valid_items and not (item == "gun" or item.startswith("dox")):
                 return False, None, f"Unknown item {params_list[0]}"
         executed = bool(act.get("executed", True))
         parsed = {
