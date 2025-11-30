@@ -57,9 +57,9 @@ class ExperimentRunner:
         self.max_output_tokens = max_output_tokens
         self.exp_cfg = exp_cfg
         self.llm_cfg = llm_cfg
-        # use a more specific instance label to avoid collisions (e.g., western_instances_15/instance_12)
-        parts = instance_dir.parts
-        if len(parts) >= 2:
+        # choose instance label: for explicit instances use parent/leaf, otherwise just leaf (e.g., base/original)
+        if "instances" in set(instance_dir.parts):
+            parts = instance_dir.parts
             self.instance_label = f"{parts[-2]}/{parts[-1]}"
         else:
             self.instance_label = instance_dir.name
