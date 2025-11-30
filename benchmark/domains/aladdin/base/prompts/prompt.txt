@@ -1,0 +1,25 @@
+A character plan is a causally sound sequence of actions leading to a desired world state. The desired world state is called the "character goal" for this character plan. A narrative plan consists of spontaneous actions and a set of character plan. A narrative plan is also associated with a desired world state called the "narrative goal". The actions need to form a causally sound sequence leading to the narrative goal. 
+
+Only the person who possess the lamp can summon galileo and cast love spells. 
+Two people must be in love with each other to get married. 
+Only the knight can kill the monsters. 
+Two characters must be in the same location to have any interactions.
+
+Given the narrative goal "the lamp spirit galileo is dead, and kamy and polly get married", generate a narrative plan where each action in the plan takes one of the forms in the following list (where #1, #2 and #3 are parameters of the action):
+
+0. do nothing - this action does not require a motivation.
+1. a subject character summons galileo from the lamp and cast a love spell to make #1 fall in love with #2 - #1 and #2 are characters; this action requires the subject character to first have the lamp, and the subject character to have a motivation to cast the love spell. This action makes #1 have the motivation to marry #2.
+2. a subject character obtains lamp from #1's dead body - #1 is a character; this action requires #1 to be dead, and the subject to have motivation to obtain the lamp.
+3. a subject character kills #1 - #1 is a character; this action requires #1 be alive, and the subject to have motivation to kill #1.
+4. a subject character marrys #1 - #1 is a character; this action requires the subject and #1 to be in love with each other and both alive.
+5. a subject character gives the lamp to #1 - #1 is a character; this action requires the subject character to have a motivation to give the lamp to #1.
+6. a subject character moves to #1 - #1 is a location; this action requires the subject to have a motivation to move to #1; 
+Only the knight alice can move out of the castle.
+7. a subject character falls in love with #1 - #1 is a character; this action does not require a motivation; this action makes the subject character have motivtation to marry #1; note that the subject character cannot be polly.
+8. a subject character appears threatening - the subject character has to be a monster; this action has no precondition; it establishes the motivation for a character to kill the one who appears threatening.
+9. a subject character asks another character #1 to kill #2 - #1 and #2 are characters; #1 must be loyal to the subject character; this action requires the subject character to have a motivation to command #1 to kill #2; this action makes the #1 to have motivation to kill #2.
+10. a subject character asks another character #1 to obtain #2 - #1 is a character and #2 is an object; #1 must be loyal to the subject character; this action requires the subject character to have a motivation to obtain #2; this action makes #1 to have motivation to give #2 to the subject character.
+
+Organize the output as a json with a list of entries with the keys "subject", "actionId", "parameters",  "action", "character_plan" and "explanation", where "subject" is the character who's performing the action, "actionId" is the id of the action as it appears in the above list, "parameters" field specifies the values of the parameters of the action as an ordered list, and "character_plan" specifies which character plan it comes from. Identiy a character plan by the name of the character and the character goal associated with the plan.
+Note that except action 0, 7 and 8 from the above list, every action has to be in a character plan. Character goals must be established by executed actions in the narrative plan, not introduced externally. 
+Output a json only, without any comments.

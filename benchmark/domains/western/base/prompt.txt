@@ -1,0 +1,101 @@
+A character plan is a causally sound sequence of actions leading to a desired world state. The desired world state is called the "character goal" for this character plan.
+A narrative plan consists of spontaneous actions and a set of character plan, and associate with each action in these character plans the following value:
+- an integer number "id" indicating when this action happens in the global timeline
+- a boolean value "executed", indicating whether this action should be successfully executed, or only in the character's mind. An action has to be successfully executed unless it is impossible to satisfy its preconditions.
+A narrative plan may also be associated with a desired world state called the "narrative goal". The actions with true "executed" value need to form a causally sound sequence leading to the narrative goal. 
+In a narrative plan, we say there is causal link between two actions a1 and a2, denoted <p: a1, a2>, if the effect of a1 and the precondition of a2 both include p. 
+We say a causal link <p: a1, a2> is threatened by another action a3 in the narrative plan, if a3's effect causes the negation of p, and a3 is executed in between a1 and a2 in the global timeline.
+A conflict occurs between two character plans in the narrative plan, when there is an action a3 threatening a causal link <p: a1, a2>, such that a3 comes from a character plan, and a1 and a2 come from another character plan.
+
+- A character can move from location l0_0 to location l1_0.
+- A character can move from location l0_0 to location l0_1.
+- A character can move from location l0_1 to location l0_0.
+- A character can move from location l0_1 to location l1_1.
+- A character can move from location l0_1 to location l0_2.
+- A character can move from location l0_2 to location l0_1.
+- A character can move from location l0_2 to location l1_2.
+- A character can move from location l0_2 to location l0_3.
+- A character can move from location l0_3 to location l0_2.
+- A character can move from location l0_3 to location l1_3.
+- A character can move from location l0_3 to location l0_4.
+- A character can move from location l0_4 to location l0_3.
+- A character can move from location l0_4 to location l1_4.
+- A character can move from location l1_0 to location l0_0.
+- A character can move from location l1_0 to location l2_0.
+- A character can move from location l1_0 to location l1_1.
+- A character can move from location l1_1 to location l0_1.
+- A character can move from location l1_1 to location l1_0.
+- A character can move from location l1_1 to location l2_1.
+- A character can move from location l1_1 to location l1_2.
+- A character can move from location l1_2 to location l0_2.
+- A character can move from location l1_2 to location l1_1.
+- A character can move from location l1_2 to location gen_store.
+- A character can move from location l1_2 to location l1_3.
+- A character can move from location l1_3 to location l0_3.
+- A character can move from location l1_3 to location l1_2.
+- A character can move from location l1_3 to location l2_3.
+- A character can move from location l1_3 to location l1_4.
+- A character can move from location l1_4 to location l0_4.
+- A character can move from location l1_4 to location l1_3.
+- A character can move from location l1_4 to location l2_4.
+- A character can move from location l2_0 to location l1_0.
+- A character can move from location l2_0 to location l3_0.
+- A character can move from location l2_0 to location l2_1.
+- A character can move from location l2_1 to location l1_1.
+- A character can move from location l2_1 to location l2_0.
+- A character can move from location l2_1 to location l3_1.
+- A character can move from location l2_1 to location gen_store.
+- A character can move from location gen_store to location l1_2.
+- A character can move from location gen_store to location l2_1.
+- A character can move from location gen_store to location l3_2.
+- A character can move from location gen_store to location l2_3.
+- A character can move from location l2_3 to location l1_3.
+- A character can move from location l2_3 to location gen_store.
+- A character can move from location l2_3 to location l3_3.
+- A character can move from location l2_3 to location l2_4.
+- A character can move from location l2_4 to location l1_4.
+- A character can move from location l2_4 to location l2_3.
+- A character can move from location l2_4 to location l3_4.
+- A character can move from location l3_0 to location l2_0.
+- A character can move from location l3_0 to location l4_0.
+- A character can move from location l3_0 to location l3_1.
+- A character can move from location l3_1 to location l2_1.
+- A character can move from location l3_1 to location l3_0.
+- A character can move from location l3_1 to location l4_1.
+- A character can move from location l3_1 to location l3_2.
+- A character can move from location l3_2 to location gen_store.
+- A character can move from location l3_2 to location l3_1.
+- A character can move from location l3_2 to location l4_2.
+- A character can move from location l3_2 to location l3_3.
+- A character can move from location l3_3 to location l2_3.
+- A character can move from location l3_3 to location l3_2.
+- A character can move from location l3_3 to location l4_3.
+- A character can move from location l3_3 to location l3_4.
+- A character can move from location l3_4 to location l2_4.
+- A character can move from location l3_4 to location l3_3.
+- A character can move from location l3_4 to location l4_4.
+- A character can move from location l4_0 to location l3_0.
+- A character can move from location l4_0 to location l4_1.
+- A character can move from location l4_1 to location l3_1.
+- A character can move from location l4_1 to location l4_0.
+- A character can move from location l4_1 to location l4_2.
+- A character can move from location l4_2 to location l3_2.
+- A character can move from location l4_2 to location l4_1.
+- A character can move from location l4_2 to location l4_3.
+- A character can move from location l4_3 to location l3_3.
+- A character can move from location l4_3 to location l4_2.
+- A character can move from location l4_3 to location l4_4.
+- A character can move from location l4_4 to location l3_4.
+- A character can move from location l4_4 to location l4_3.
+- A character can move from location l3_4 to location l4_4.
+- A character can move from location l4_3 to location l4_4.
+
+Without any specifc narrative goal, generate a narrative plan with some conflict, where each action in the plan takes one of the forms in the following list:
+1. The subject character is bitten by a snake and is dying. Spontaneous action: This action shouldn't be in any character plan. Precondition: none. Effect: make subject character dying, and establish the subject character's goal to use meds to heal them.
+2. The subject moves to location #1. Precondition: the subject character can go to #1 from their current location. Effect: the subject character becomes located at #2.
+3. The subject takes meds from the merchant carl. Precondition: The subject character must be alive and at the same location with carl; carl must still has more than zero number of meds. the subject character must not already have some meds. Effect: the subject character now has meds; carl loses 1 meds.
+4. The subject takes meds from another character #1 who is not carl. Precondition: The subject character must be alive and at the same location with #1; #1 must be in possesion of at least one meds; the subject character must not already have some meds; carl's meds must all have been taken. Effect: the subject character now has a meds; #1 now loses a meds. 
+5. The subject character use meds to heal another character #1 (possibly themselves). Precondition: the subject character must be in possesion of at least one meds; the subject character must be at the same location as #1; both the subject character and #1 must be alive. Effect: #1 is not not dying; the subject character loses one meds.
+Organize the output as a json with a list of entries with the keys "subject", "actionId", "parameters",  "action", "character_plan" and "explanation", where "subject" is the character who's performing the action, "actionId" is the id of the action as it appears in the above list, "parameters" field specifies the values of the parameters of the action as an ordered list, "character_plan" specifies which character plan it comes from, and "executed" indicates whether the action should be successfully executed. Identiy a character plan by the name of the character and the character goal associated with the plan.
+Note that except action 1 from the above list, every action has to be in a character plan. Character goals must be established by executed actions in the narrative plan, not introduced externally.
+Output a json only, without any comments.

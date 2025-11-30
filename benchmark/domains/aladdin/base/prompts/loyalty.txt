@@ -1,0 +1,4 @@
+We have 5 characters: 
+the knight alice, the king kamy, the princess polly, the lamp spirit galileo, the dragon david.
+The lamp spirit and the dragon are monsters. 
+We have two locations: mountain and castle. Any character can move from any location to any other location.

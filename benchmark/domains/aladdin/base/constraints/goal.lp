@@ -1,0 +1,1 @@
+:- not fl(married_with(mamoud, jasmine, t), maxstep).
