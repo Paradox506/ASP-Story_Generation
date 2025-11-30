@@ -248,9 +248,9 @@ class ExperimentRunner:
         self.writer.write(run_id, result, prompt, llm_raw, parse, asp, raw_clingo=raw_clingo, constraints=constraints)
         self.writer.append_log(run_id, result)
 
-    def copy_support_files(self, run_id: str, include_matrix: bool = False) -> None:
+    def copy_support_files(self, run_id: str) -> None:
         """
-        Copy ASP input LP files (and optionally matrix.txt for secret_agent) into the run directory
+        Copy ASP input LP files (and instance-specific extras) into the run directory
         to ease offline verification in prompt-only/response-file modes.
         """
         dest_dir = self.writer.ensure_dir(run_id)
@@ -261,10 +261,12 @@ class ExperimentRunner:
                 shutil.copy(f, inputs_dir / os.path.basename(f))
             except Exception:
                 pass
-        if include_matrix and self.domain == "secret_agent":
-            matrix_path = self.instance_dir / "matrix.txt"
-            if matrix_path.exists():
+        # copy instance-specific extras (matrix.txt, loyalty.txt, intro.txt, etc.)
+        extras = ["matrix.txt", "loyalty.txt", "intro.txt"]
+        for name in extras:
+            p = self.instance_dir / name
+            if p.exists():
                 try:
-                    shutil.copy(matrix_path, dest_dir / "matrix.txt")
+                    shutil.copy(p, dest_dir / name)
                 except Exception:
                     pass
