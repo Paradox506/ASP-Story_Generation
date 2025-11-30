@@ -12,7 +12,7 @@ except Exception:  # pragma: no cover
     clingo = None
 
 from benchmark.asp.action_utils import ActionMapper, extract_intention
-from benchmark.asp.constraints_collector import ConstraintsCollector, get_collector
+from benchmark.asp.constraints_collectors import ConstraintsCollector, get_collector
 
 
 class ASPValidator:
