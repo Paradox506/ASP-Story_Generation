@@ -1,8 +1,12 @@
 import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Set
 
 from benchmark.asp.action_utils import ActionMapper
+
+
+logger = logging.getLogger(__name__)
 
 
 class SecretAgentPlanParser:
@@ -84,7 +88,7 @@ class SecretAgentPlanParser:
                 return False, None, f"Missing field {f}"
 
         subject = act["subject"]
-        subject_norm, subject_known = self._normalize_and_check_subject(subject)
+        subject_norm, has_agent_token, subject_known = self._normalize_and_check_subject(subject)
 
         aid_raw = str(act["actionId"])
         if aid_raw not in self.ACTION_MAP:
@@ -101,7 +105,8 @@ class SecretAgentPlanParser:
             return False, None, param_error
 
         parsed = {
-            "subject": subject_norm,
+            "subject": "secret_agent",
+            "original_subject": subject,
             "actionId": aid_raw,
             "functor": functor,
             "parameters": params_list,
@@ -109,6 +114,10 @@ class SecretAgentPlanParser:
         }
         if not subject_known:
             parsed["unknown_subject"] = True
+        if not has_agent_token:
+            logger.warning(
+                "SecretAgentPlanParser: subject without 'agent' token encountered: %s", subject
+            )
         return True, parsed, ""
 
     def _normalize_params(self, functor: str, params: Any) -> List[str]:
@@ -149,11 +158,11 @@ class SecretAgentPlanParser:
                 return f"Unknown item {params[0]}"
         return None
 
-    def _normalize_and_check_subject(self, subject: Any) -> Tuple[Any, bool]:
+    def _normalize_and_check_subject(self, subject: Any) -> Tuple[Any, bool, bool]:
         subject_norm = self._normalize_subject(subject)
         has_agent_token = isinstance(subject, str) and ("agent" in subject.lower())
         subject_known = subject_norm in self.valid_characters or has_agent_token
-        return subject_norm, subject_known
+        return subject_norm, has_agent_token, subject_known
 
     def _normalize_subject(self, subject: Any) -> Any:
         if not isinstance(subject, str):
