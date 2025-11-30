@@ -149,14 +149,6 @@ class ExperimentRunner:
         # persist constraints early so we can reuse the file for clingo input
         constraints_path = self.writer.ensure_dir(run_id) / f"{self.domain}_NarrPlan.lp"
         constraints_path.write_text(constraints_text)
-        # also persist the LP inputs used for validation for easy offline reruns
-        inputs_dir = constraints_path.parent / "asp_inputs"
-        inputs_dir.mkdir(parents=True, exist_ok=True)
-        for f in self.validator.get_input_files():
-            try:
-                shutil.copy(f, inputs_dir / Path(f).name)
-            except Exception:
-                pass
         asp_result = self.validator.validate_plan(
             parse_result["actions"],
             maxstep=effective_maxstep,
