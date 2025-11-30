@@ -351,6 +351,14 @@ class ExperimentRunner:
                         collected.append({"source": str(src.resolve()), "dest": str(dest_path.resolve())})
                     except Exception:
                         pass
+            # copy any sibling .txt files near the response file directory into run root
+            for txt in self.response_file_dir.glob("*.txt"):
+                try:
+                    dest_path = dest_dir / txt.name
+                    shutil.copy(txt, dest_path)
+                    collected.append({"source": str(txt.resolve()), "dest": str(dest_path.resolve())})
+                except Exception:
+                    pass
 
         # persist collection log
         collect_path = dest_dir / "collect.json"
