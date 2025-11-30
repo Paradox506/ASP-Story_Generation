@@ -12,7 +12,7 @@ except Exception:  # pragma: no cover
     clingo = None
 
 from benchmark.asp.action_utils import ActionMapper, extract_intention
-from benchmark.asp.constraints_collectors import ConstraintsCollector, get_collector
+from benchmark.asp.constraints_collectors import BaseConstraintsCollector, get_collector
 
 
 class ASPValidator:
@@ -28,7 +28,7 @@ class ASPValidator:
         instance_dir: Path,
         clingo_path: str = "clingo",
         use_clingo_api: bool = False,
-        collector: ConstraintsCollector = None,
+        collector: BaseConstraintsCollector = None,
     ):
         self.domain = domain
         self.domain_dir = domain_dir
