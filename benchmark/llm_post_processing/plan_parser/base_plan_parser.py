@@ -25,7 +25,7 @@ class BasePlanParser:
             atoms: Set[str] = set()
             if not path.exists():
                 return atoms
-            pattern = re.compile(rf"{predicate}\\(\\s*([^)]+?)\\s*\\)\\s*\\.")
+            pattern = re.compile(rf"{predicate}\(\s*([^)]+?)\s*\)\s*\.")
             for line in path.read_text().splitlines():
                 m = pattern.search(line)
                 if m:
