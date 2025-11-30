@@ -390,7 +390,9 @@ def get_plan_parser(domain: str, domain_dir: Path, instance_dir: Path, use_autho
     if domain == "aladdin":
         return AladdinPlanParser(domain, domain_dir, instance_dir)
     if domain == "secret_agent":
-        return SecretAgentPlanParser(domain, domain_dir, instance_dir)
+        from benchmark.llm_post_processing.secret_agent_plan_parser import SecretAgentPlanParser
+
+        return SecretAgentPlanParser(domain_dir, instance_dir)
     if domain == "western":
         return WesternPlanParser(domain, domain_dir, instance_dir)
     raise ValueError(f"Unsupported domain {domain}")
