@@ -6,10 +6,11 @@ from .base import ConstraintBuilder
 
 
 class AladdinConstraintBuilder(ConstraintBuilder):
-    def __init__(self, mapper: ActionMapper):
+    def __init__(self, mapper: ActionMapper, use_default_intention: bool = False):
         super().__init__(mapper)
         # Unintentional actions are encoded as act/3 in the ASP (no intention argument)
         self.unintentional_ids = {0, 7, 8}
+        self.use_default_intention = use_default_intention
 
     def _default_intention(self, aid: int, params: List[str], subj: str) -> str:
         """
@@ -48,9 +49,12 @@ class AladdinConstraintBuilder(ConstraintBuilder):
             if aid in self.unintentional_ids:
                 # act/3 form for unintentional actions (appear_threatening, fall_in_love, do_nothing)
                 lines.append(f"act({subj}, {functor}, {i}).")
-            else:
-                intention = extract_intention(action.get("character_plan", "")) or self._default_intention(
-                    aid, params, subj
-                )
-                lines.append(f"act({subj}, {functor}, {intention}, {i}).")
+                continue
+
+            intention = extract_intention(action.get("character_plan", ""))
+            if not intention and self.use_default_intention:
+                intention = self._default_intention(aid, params, subj)
+            if not intention:
+                raise ValueError(f"Missing intention for actionId={aid} at step {i}")
+            lines.append(f"act({subj}, {functor}, {intention}, {i}).")
         return "\n".join(lines)

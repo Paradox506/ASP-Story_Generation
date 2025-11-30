@@ -6,8 +6,9 @@ from .base import ConstraintBuilder
 
 
 class WesternConstraintBuilder(ConstraintBuilder):
-    def __init__(self, mapper: ActionMapper):
+    def __init__(self, mapper: ActionMapper, use_default_intention: bool = False):
         super().__init__(mapper)
+        self.use_default_intention = use_default_intention
 
     def build(self, actions: List[Dict]) -> str:
         lines: List[str] = []
@@ -23,7 +24,11 @@ class WesternConstraintBuilder(ConstraintBuilder):
             # Action 6 (do nothing) not represented in ASP; skip
             if aid == 6:
                 continue
-            intention = self._default_intention(aid, params, subj)
+            intention = action.get("intention") or None
+            if not intention and self.use_default_intention:
+                intention = self._default_intention(aid, params, subj)
+            if not intention:
+                raise ValueError(f"Missing intention for actionId={aid} at step {i}")
             executed_flag = action.get("executed", True)
             if executed_flag:
                 lines.append(f"act({subj}, {functor}, {intention}, {i}).")
