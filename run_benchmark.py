@@ -158,6 +158,20 @@ def main():
 
         normalized_model = _normalize_model_for_provider(model_name, provider)
 
+        # If using response file, try to derive instance subpath from the response location to preserve structure
+        instance_label_override = None
+        if response_file_dir:
+            parts = list(response_file_dir.parts)
+            try:
+                idx = parts.index(domain)
+                # expect structure: .../run_x/domain/asp/model/<instance_subpath>
+                if idx + 3 < len(parts):
+                    rel = Path(*parts[idx + 3 :])
+                    if rel.parts:
+                        instance_label_override = rel.as_posix()
+            except ValueError:
+                pass
+
         runner = ExperimentRunner(
             base_dir=base,
             domains_root=domains_root,
@@ -177,6 +191,7 @@ def main():
             llm_cfg=llm_cfg,
             use_author_style=use_author_style,
             response_file_dir=response_file_dir,
+            instance_label_override=instance_label_override,
         )
         if args.prompt_only:
             prompt = runner.prompt_gen.build_prompt(domains_root, inst_dir)

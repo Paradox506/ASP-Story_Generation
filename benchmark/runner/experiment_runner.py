@@ -41,6 +41,7 @@ class ExperimentRunner:
         llm_cfg: Optional[LlmConfig] = None,
         use_author_style: bool = False,
         response_file_dir: Optional[Path] = None,
+        instance_label_override: Optional[str] = None,
     ):
         self.base_dir = base_dir
         self.domains_root = domains_root
@@ -59,8 +60,10 @@ class ExperimentRunner:
         self.exp_cfg = exp_cfg
         self.llm_cfg = llm_cfg
         self.response_file_dir = response_file_dir
-        # choose instance label: for explicit instances use parent/leaf, otherwise just leaf (e.g., base/original)
-        if "instances" in set(instance_dir.parts):
+        # choose instance label: prefer override (e.g., response file subpath); otherwise infer
+        if instance_label_override:
+            self.instance_label = instance_label_override
+        elif "instances" in set(instance_dir.parts):
             parts = instance_dir.parts
             self.instance_label = f"{parts[-2]}/{parts[-1]}"
         else:
