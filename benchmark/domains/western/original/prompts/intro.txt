@@ -1,0 +1,23 @@
+A character plan is a causally sound sequence of actions leading to a desired world state. The desired world state is called the "character goal" for this character plan.
+A narrative plan consists of spontaneous actions and a set of character plan, and associate with each action in these character plans the following value:
+- an integer number "id" indicating when this action happens in the global timeline
+- a boolean value "executed", indicating whether this action should be successfully executed, or only in the character's mind.
+A narrative plan may also be associated with a desired world state called the "narrative goal". The actions with true "executed" value need to form a causally sound sequence leading to the narrative goal. 
+In a narrative plan, we say there is causal link between two actions a1 and a2, denoted <p: a1, a2>, if the effect of a1 and the precondition of a2 both include p. 
+We say a causal link <p: a1, a2> is threatened by another action a3 in the narrative plan, if a3's effect causes the negation of p, and a3 is executed in between a1 and a2 in the global timeline.
+A conflict occurs between two character plans in the narrative plan, when there is an action a3 threatening a causal link <p: a1, a2>, such that a3 comes from a character plan, and a1 and a2 come from another character plan.
+
+We have four characters hank, timmy, william, and carl. hank is timmy's parent. william is the sheriff, and carl is the store owner. meds belongs to carl. Only hank and william are armed. 
+We have three locations: ranch, saloon and gen_store. Any character can move from any location to any other location.
+Here's the current state: all the characters are alive. None of them are dying. hank and timmy are at ranch. william is at saloon. carl is at gen_store. Only carls has meds. meds is not used. No character has any intention.
+
+Given the narrative goal "timmy alive or dead in the end", generate a narrative plan with some conflict, where each action in the plan takes one of the forms in the following list:
+1. The subject character is bitten by a snake and is dying. Spontaneous action: This action shouldn't be in any character plan. Precondition: none. Effect: make subject character dying, establish the subject character's goal to use meds to heal them, and establish the subject's parent's goal to use meds to heal the subject character.
+2. The subject moves to location #1. Precondition: none Effect: the subject character becomes located at #2.
+3. The subject takes item #1 from character #2. Precondition: The subject character must be alive and at the same location with #2; #2 must be in possesion of #1. Effect: the subject character now has #1; #2 now does not have #1; the sheriff now has the goal of killing the subject character; #2 now has the goal of taking #1 back from the subject character.
+4. The subject character use meds to heal another character #1. Precondition: the subject character must be in possesion of meds; the subject character must be at the same location as #1; meds must not have been used; both the subject character and #1 must be alive. Effect: #1 is not not dying; meds is now used.
+5. The subject character kills another character #1. Precondition: the subject character must be alive, armed and at the same location as #1; #1 must be alive. Effect: #1 is now dead.
+6. The subject character is doing nothing. Spontaneous action: This action shouldn't be in any character plan. Precondition: none; Effect: none.
+Organize the output as a json with a list of entries with the keys "subject", "actionId", "parameters",  "action", "character_plan" and "explanation", where "subject" is the character who's performing the action, "actionId" is the id of the action as it appears in the above list, "parameters" field specifies the values of the parameters of the action as an ordered list, "character_plan" specifies which character plan it comes from, and "executed" indicates whether the action should be successfully executed. Identiy a character plan by the name of the character and the character goal associated with the plan.
+Note that except action 1 and 6 from the above list, every action has to be in a character plan. Character goals must be established by executed actions in the narrative plan, not introduced externally.
+Output a json only, without any comments.

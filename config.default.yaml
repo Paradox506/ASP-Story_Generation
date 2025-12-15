@@ -1,5 +1,5 @@
 experiment:
-  domain: aladdin
+  domain: secret_agent
   asp_version: base
   mode: one-off
   models:

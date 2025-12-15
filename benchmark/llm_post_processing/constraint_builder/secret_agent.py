@@ -12,15 +12,11 @@ class SecretAgentConstraintBuilder(ConstraintBuilder):
         lines: List[str] = [f"#const maxstep={max_const}.", "% Secret Agent plan constraints"]
         for t, action in enumerate(actions):
             subj = action["subject"]
-            functor = self._to_functor(action)
-            executed = action.get("executed", True)
-            if executed:
-                lines.append(f":- not act({subj}, {functor}, {t}).")
-            else:
-                lines.append(f":- not unexec_act({subj}, {functor}, {t}).")
+            functor = self.functor_from_action(action)
+            lines.append(f":- not act({subj}, {functor}, {t}).")
         return "\n".join(lines) + "\n"
 
-    def _to_functor(self, action: Dict[str, Any]) -> str:
+    def functor_from_action(self, action: Dict[str, Any]) -> str:
         functor = action.get("functor")
         params = action.get("parameters", [])
         if functor in ("move", "pickup") and len(params) == 1:

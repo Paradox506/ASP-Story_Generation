@@ -1,0 +1,16 @@
+fl(at(agent_0, castle), 0).
+fl(alive(agent_0, t), 0).
+fl(at(agent_1, castle), 0).
+fl(alive(agent_1, t), 0).
+fl(at(agent_2, castle), 0).
+fl(alive(agent_2, t), 0).
+fl(at(agent_3, castle), 0).
+fl(alive(agent_3, t), 0).
+fl(at(agent_4, castle), 0).
+fl(alive(agent_4, t), 0).
+fl(at(agent_5, castle), 0).
+fl(alive(agent_5, t), 0).
+fl(at(agent_6, castle), 0).
+fl(alive(agent_6, t), 0).
+fl(at(agent_7, castle), 0).
+fl(alive(agent_7, t), 0).

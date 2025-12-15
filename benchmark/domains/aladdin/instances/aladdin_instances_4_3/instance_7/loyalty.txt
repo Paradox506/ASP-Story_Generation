@@ -1,0 +1,6 @@
+
+We have 17 characters: 
+the knight alice, the king kamy, the princess polly, the lamp spirit galileo, the dragon david, and delegation agents agent_0,agent_1,agent_2,agent_3,agent_4,agent_5,agent_6,agent_7,agent_8,agent_9,agent_10,agent_11.
+The lamp spirit and the dragon are monsters. 
+We have two locations: mountain and castle. Any character can move from any location to any other location.
+alice is loyal to agent_2. alice is loyal to agent_0. alice is loyal to agent_1. agent_2 is loyal to agent_3. agent_2 is loyal to agent_5. agent_3 is loyal to agent_7. agent_3 is loyal to agent_8. agent_7 is loyal to agent_9. agent_7 is loyal to agent_11. agent_9 is loyal to kamy. 

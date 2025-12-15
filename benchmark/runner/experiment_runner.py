@@ -3,17 +3,15 @@ from typing import Dict, Optional
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
-import os
 
 from benchmark.asp.validator import ASPValidator
-from benchmark.llm_clients.openrouter_client import OpenRouterClient
 from benchmark.llm_post_processing.plan_parser import get_plan_parser
 from benchmark.prompt_builders.prompt_builder import get_prompt_builder
 from benchmark.config.config_utils import load_api_key
 from benchmark.io.artifact_writer import ArtifactWriter
 from benchmark.config.config_loader import ExperimentConfig, LlmConfig
-import shutil
-import os
+from benchmark.domain_registry import get_adapter
+from benchmark.io.support_files_copier import SupportFilesCopier
 
 
 class ExperimentRunner:
@@ -39,7 +37,6 @@ class ExperimentRunner:
         max_output_tokens: Optional[int] = None,
         exp_cfg: Optional[ExperimentConfig] = None,
         llm_cfg: Optional[LlmConfig] = None,
-        use_author_style: bool = False,
         response_file_dir: Optional[Path] = None,
         instance_label_override: Optional[str] = None,
     ):
@@ -78,30 +75,12 @@ class ExperimentRunner:
             self.instance_label,
         )
         self.prompt_gen = get_prompt_builder(domain, asp_version)
-        self.parser = get_plan_parser(domain, domain_dir, instance_dir, use_author_style=use_author_style)
+        self.parser = get_plan_parser(domain, domain_dir, instance_dir)
         self.validator = ASPValidator(domain, domain_dir, instance_dir, clingo_path=clingo_path)
-        self.evaluator = None
-        if domain == "secret_agent":
-            try:
-                from benchmark.evaluators.secret_agent_evaluator import SecretAgentEvaluator
-
-                self.evaluator = SecretAgentEvaluator()
-            except Exception:
-                self.evaluator = None
-        elif domain == "western":
-            try:
-                from benchmark.evaluators.western_evaluator import WesternEvaluator
-
-                self.evaluator = WesternEvaluator()
-            except Exception:
-                self.evaluator = None
-        elif domain == "aladdin":
-            try:
-                from benchmark.evaluators.aladdin_evaluator import AladdinEvaluator
-
-                self.evaluator = AladdinEvaluator()
-            except Exception:
-                self.evaluator = None
+        try:
+            self.evaluator = get_adapter(domain).evaluator_factory()
+        except Exception:
+            self.evaluator = None
 
     def run(self, response_text: Optional[str] = None, run_seq: int = 0) -> Dict:
         offline = response_text is not None
@@ -112,7 +91,7 @@ class ExperimentRunner:
         run_id = f"{base_id}/run_{run_seq:04d}"
         if response_text is None:
             api_key = load_api_key(self.config_path, provider=self.provider)
-            client = self._make_client(api_key)
+            client = self.make_client(api_key)
             llm_result = client.generate(prompt)
             if not llm_result.get("success"):
                 result = {
@@ -120,11 +99,11 @@ class ExperimentRunner:
                     "success": False,
                     "error": llm_result.get("error"),
                     "run_id": run_id,
-                    "metadata": self._metadata(),
+                    "metadata": self.metadata(),
                     "llm_timing": llm_result,
                     "llm_raw": llm_result.get("content", "") or llm_result.get("error", ""),
                 }
-                self._persist_result(result, run_id, prompt, llm_raw=None, parse=None, asp=None)
+                self.persist_result(result, run_id, prompt, llm_raw=None, parse=None, asp=None)
                 self.copy_support_files(run_id)
                 return result
             response_text = llm_result["content"]
@@ -140,10 +119,10 @@ class ExperimentRunner:
                 "parse": parse_result,
                 "llm_timing": timing,
                 "run_id": run_id,
-                "metadata": self._metadata(),
+                "metadata": self.metadata(),
                 "offline": offline,
             }
-            self._persist_result(result, run_id, prompt, response_text, parse_result, asp=None)
+            self.persist_result(result, run_id, prompt, response_text, parse_result, asp=None)
             self.copy_support_files(run_id)
             return result
 
@@ -166,7 +145,7 @@ class ExperimentRunner:
             if self.evaluator:
                 expected_conflicts = 0
                 if self.domain == "western":
-                    expected_conflicts = self._expected_conflicts()
+                    expected_conflicts = self.expected_conflicts()
                     evaluation = self.evaluator.evaluate(asp_result, parse_result, expected_conflicts=expected_conflicts)
                 else:
                     evaluation = self.evaluator.evaluate(asp_result, parse_result)
@@ -181,12 +160,11 @@ class ExperimentRunner:
                 "asp": asp_result,
                 "clingo_stdout": self.validator.last_stdout if hasattr(self.validator, "last_stdout") else None,
                 "run_id": run_id,
-                "metadata": self._metadata(),
-                "offline": offline,
+                "metadata": self.metadata(),
                 "offline": offline,
                 "evaluation": evaluation,
             }
-            self._persist_result(
+            self.persist_result(
                 result,
                 run_id,
                 prompt,
@@ -204,14 +182,14 @@ class ExperimentRunner:
                 "success": False,
                 "error": str(e),
                 "run_id": run_id,
-                "metadata": self._metadata(),
+                "metadata": self.metadata(),
                 "prompt": prompt,
                 "llm_raw": response_text,
                 "parse": parse_result,
                 "offline": offline,
                 "llm_timing": timing,
             }
-            self._persist_result(
+            self.persist_result(
                 error_result,
                 run_id,
                 prompt,
@@ -228,7 +206,7 @@ class ExperimentRunner:
                 pass
             return error_result
 
-    def _make_client(self, api_key: Optional[str]):
+    def make_client(self, api_key: Optional[str]):
         if self.provider == "openrouter":
             from benchmark.llm_clients.openrouter_client import OpenRouterClient
 
@@ -253,7 +231,7 @@ class ExperimentRunner:
             return AnthropicClient()
         raise ValueError(f"Unsupported provider {self.provider}")
 
-    def _metadata(self) -> Dict:
+    def metadata(self) -> Dict:
         return {
             "domain": self.domain,
             "asp_version": self.asp_version,
@@ -262,11 +240,10 @@ class ExperimentRunner:
             "maxstep": self.maxstep,
         }
 
-    def _expected_conflicts(self) -> int:
-        # Placeholder: could read from config/goal if available
+    def expected_conflicts(self) -> int:
         return 0
 
-    def _persist_result(
+    def persist_result(
         self,
         result: Dict,
         run_id: str,
@@ -281,88 +258,15 @@ class ExperimentRunner:
         self.writer.append_log(run_id, result)
 
     def copy_support_files(self, run_id: str) -> None:
-        """
-        Copy ASP inputs into run directory:
-        - Domain-level constraints -> domain_constraints/
-        - Instance-level constraints -> instance_constraints/ (skipped when asp_version is base)
-        - Instance extras (matrix.txt/loyalty.txt/intro.txt) -> run root
-        """
         dest_dir = self.writer.ensure_dir(run_id)
-        domain_dir = dest_dir / "domain_constraints"
-        domain_dir.mkdir(parents=True, exist_ok=True)
-        instance_dir = dest_dir / "instance_constraints"
-        instance_dir.mkdir(parents=True, exist_ok=True)
         domain_root_dir = (self.domains_root / self.domain / self.asp_version).resolve()
-        inst_root_dir = self.instance_dir.resolve()
-        collected = []
-
-        def _is_instance_path(p: Path) -> bool:
-            rp = p.resolve()
-            try:
-                rp.relative_to(inst_root_dir)
-            except Exception:
-                return False
-            # Exclude domain-root files even if instance_dir equals domain_root (e.g., base runs)
-            try:
-                rp.relative_to(domain_root_dir)
-                return False
-            except Exception:
-                return True
-
-        for f in self.validator.get_input_files():
-            try:
-                src = Path(f)
-                dest_name = src.name
-                target_dir = instance_dir if _is_instance_path(src) else domain_dir
-                # avoid collision between base/init and instance init
-                if dest_name == "init.lp" and not _is_instance_path(src):
-                    dest_name = "base_init.lp"
-                dest_path = target_dir / dest_name
-                shutil.copy(src, dest_path)
-                collected.append({"source": str(src.resolve()), "dest": str(dest_path.resolve())})
-            except Exception:
-                pass
-        # copy instance-specific extras (matrix.txt, loyalty.txt, intro.txt, etc.)
-        extras = ["matrix.txt", "loyalty.txt", "intro.txt"]
-        for name in extras:
-            p = self.instance_dir / name
-            if p.exists():
-                try:
-                    dest_path = dest_dir / name
-                    shutil.copy(p, dest_path)
-                    collected.append({"source": str(p.resolve()), "dest": str(dest_path.resolve())})
-                except Exception:
-                    pass
-        # If running from a response file, also copy any pre-existing instance_constraints next to it
-        if self.response_file_dir:
-            resp_ic = Path(self.response_file_dir) / "instance_constraints"
-            if resp_ic.exists() and resp_ic.is_dir():
-                for src in resp_ic.iterdir():
-                    try:
-                        dest_name = src.name
-                        domain_init = self.domains_root / self.domain / self.asp_version / "constraints" / "init.lp"
-                        # If init.lp shows up here, treat it as domain init to avoid polluting instance constraints
-                        if dest_name == "init.lp":
-                            dest_name = "base_init.lp"
-                            dest_path = domain_dir / dest_name
-                        else:
-                            dest_path = instance_dir / dest_name
-                        shutil.copy(src, dest_path)
-                        collected.append({"source": str(src.resolve()), "dest": str(dest_path.resolve())})
-                    except Exception:
-                        pass
-            # copy any sibling .txt files near the response file directory into run root
-            for txt in self.response_file_dir.glob("*.txt"):
-                try:
-                    dest_path = dest_dir / txt.name
-                    shutil.copy(txt, dest_path)
-                    collected.append({"source": str(txt.resolve()), "dest": str(dest_path.resolve())})
-                except Exception:
-                    pass
-
-        # persist collection log
-        collect_path = dest_dir / "collect.json"
-        try:
-            collect_path.write_text(json.dumps(collected, indent=2))
-        except Exception:
-            pass
+        instance_root_dir = self.instance_dir.resolve()
+        clingo_input_files = self.validator.clingo_input_files()
+        copier = SupportFilesCopier()
+        copier.copy_support_files(
+            dest_dir=dest_dir,
+            clingo_input_files=clingo_input_files,
+            domain_root_dir=domain_root_dir,
+            instance_root_dir=instance_root_dir,
+            response_file_dir=self.response_file_dir,
+        )

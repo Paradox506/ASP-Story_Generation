@@ -1,0 +1,1 @@
+:- not fl(alive(mastermind, f), 0).

@@ -1,0 +1,732 @@
+(ml) wangyi@ADSKQLTXW1D2VD LLMNarrativePlanning % python western.py
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+{'hank': "You are hank. You are timmy's parent. You are armed.", 'timmy': "You are timmy. You are hank's child.", 'william': 'You are william. You are sheriff.', 'carl': 'You ara carl. You can meds.'}
+hank is alive.
+timmy is alive.
+william is alive.
+carl is alive.
+hank is not dying.
+timmy is not dying.
+william is not dying.
+carl is not dying.
+hank is at ranch.
+timmy is at ranch.
+william is at saloon.
+carl is at gen_store.
+carl does not have meds.
+meds is not used yet and can be used.
+
+intentional:  ['move(ranch)', 'move(saloon)', 'move(gen_store)', 'take(meds,hank)', 'take(meds,timmy)', 'take(meds,william)', 'take(meds,carl)', 'heal(hank,meds)', 'heal(timmy,meds)', 'heal(william,meds)', 'heal(carl,meds)', 'kill(hank)', 'kill(timmy)', 'kill(william)', 'kill(carl)']
+unintentional:  ['snakebite']
+success:  0/0
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to gen_store.', 'character_plan': 'hank: Heal Timmy', 'executed': True}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes meds from carl.', 'character_plan': 'hank: Heal Timmy', 'executed': True}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to gen_store.', 'character_plan': 'william: Kill Hank', 'executed': True}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills hank.', 'character_plan': 'william: Kill Hank', 'executed': True}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character uses meds to heal timmy.', 'character_plan': 'hank: Heal Timmy', 'executed': False}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to gen_store.', 'character_plan': 'hank: Heal Timmy', 'executed': True}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes meds from carl.', 'character_plan': 'hank: Heal Timmy', 'executed': True}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to gen_store.', 'character_plan': 'william: Kill Hank', 'executed': True}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills hank.', 'character_plan': 'william: Kill Hank', 'executed': True}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character uses meds to heal timmy.', 'character_plan': 'hank: Heal Timmy', 'executed': False}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+True
+success:  1/1
+New plan generated: 
+[{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'William', 'actionId': 5, 'parameters': ['Carl'], 'character_plan': 'william: kill Carl', 'executed': True, 'explanation': "William kills Carl, threatening Carl's plan to heal Timmy."}, {'subject': 'Carl', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': 'carl: use meds to heal Timmy', 'executed': False, 'explanation': 'Carl could not heal Timmy because William killed him before he could use the meds.'}]
+{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'William', 'actionId': 5, 'parameters': ['Carl'], 'character_plan': 'william: kill Carl', 'executed': True, 'explanation': "William kills Carl, threatening Carl's plan to heal Timmy."}
+{'subject': 'Carl', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': 'carl: use meds to heal Timmy', 'executed': False, 'explanation': 'Carl could not heal Timmy because William killed him before he could use the meds.'}
+the plan: deque([{'Timmy': ('snakebite', True)}, {'William': ('kill(Carl)', True)}, {'Carl': ('heal(meds,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(william, kill(carl), 1).
+:- not act(carl, heal(meds,meds), 2).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  1/2
+New plan generated: 
+[{'subject': 'Timmy', 'actionId': 1, 'parameters': ['Timmy'], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake, becoming dying and setting goals for himself and Hank to use meds to heal him.'}, {'subject': 'carl', 'actionId': 3, 'parameters': ['meds', 'gen_store'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'carl: use meds to heal Timmy', 'executed': True, 'explanation': 'Carl takes meds from the general store to use them to heal Timmy.'}, {'subject': 'william', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'william: kill carl', 'executed': True, 'explanation': "William takes meds from Carl, threatening Carl's plan to heal Timmy."}, {'subject': 'carl', 'actionId': 4, 'parameters': ['Timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'carl: use meds to heal Timmy', 'executed': False, 'explanation': 'Carl attempts to use meds to heal Timmy, but William interferes by taking the meds, preventing the healing.'}]
+{'subject': 'Timmy', 'actionId': 1, 'parameters': ['Timmy'], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake, becoming dying and setting goals for himself and Hank to use meds to heal him.'}
+{'subject': 'carl', 'actionId': 3, 'parameters': ['meds', 'gen_store'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'carl: use meds to heal Timmy', 'executed': True, 'explanation': 'Carl takes meds from the general store to use them to heal Timmy.'}
+{'subject': 'william', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'william: kill carl', 'executed': True, 'explanation': "William takes meds from Carl, threatening Carl's plan to heal Timmy."}
+{'subject': 'carl', 'actionId': 4, 'parameters': ['Timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'carl: use meds to heal Timmy', 'executed': False, 'explanation': 'Carl attempts to use meds to heal Timmy, but William interferes by taking the meds, preventing the healing.'}
+the plan: deque([{'Timmy': ('snakebite', True)}, {'carl': ('take(meds,gen_store)', True)}, {'william': ('take(meds,carl)', True)}, {'carl': ('heal(Timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(carl, take(meds,gen_store), 1).
+:- not act(william, take(meds,carl), _, 2).
+:- not act(carl, heal(timmy,meds), 3).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  1/3
+New plan generated: 
+{'narrative_plan': [{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'timmy', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'timmy: Use meds to heal Timmy', 'executed': True, 'explanation': 'Timmy moves from ranch to gen_store to obtain meds.'}, {'subject': 'timmy', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'timmy: Use meds to heal Timmy', 'executed': True, 'explanation': 'Timmy takes meds from Carl to heal himself.'}, {'subject': 'carl', 'actionId': 3, 'parameters': ['meds', 'timmy'], 'character_plan': 'carl: Take meds back from Timmy', 'executed': False, 'explanation': 'Carl has the goal to take meds back from Timmy but does not execute it.'}, {'subject': 'william', 'actionId': 3, 'parameters': ['timmy'], 'character_plan': 'william: Kill Timmy', 'executed': True, 'explanation': 'William, upon seeing Timmy take meds, decides to kill him.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'william: Kill Timmy', 'executed': True, 'explanation': 'William moves from saloon to gen_store to confront Timmy.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'character_plan': 'william: Kill Timmy', 'executed': True, 'explanation': 'William kills Timmy at the gen_store, preventing Timmy from using the meds.'}]}
+narrative_plan
+string indices must be integers
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'is bitten by a snake and is dying', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and starts dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'moves to gen_store', 'character_plan': 'hank uses meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to retrieve meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'takes meds from carl', 'character_plan': 'hank uses meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'moves to gen_store', 'character_plan': 'william prevents hank from healing Timmy', 'executed': True, 'explanation': 'William moves from saloon to gen_store to confront Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'action': 'kills carl', 'character_plan': 'william prevents hank from healing Timmy', 'executed': True, 'explanation': 'William kills Carl to prevent Hank from obtaining meds.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'is bitten by a snake and is dying', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and starts dying.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'moves to gen_store', 'character_plan': 'hank uses meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to retrieve meds.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'takes meds from carl', 'character_plan': 'hank uses meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'moves to gen_store', 'character_plan': 'william prevents hank from healing Timmy', 'executed': True, 'explanation': 'William moves from saloon to gen_store to confront Hank.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'action': 'kills carl', 'character_plan': 'william prevents hank from healing Timmy', 'executed': True, 'explanation': 'William kills Carl to prevent Hank from obtaining meds.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(carl)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(carl), _, 4).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  1/4
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'Timmy is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Spontaneous action: Timmy is bitten, establishing goals to use meds.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'Hank moves to gen_store.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves to gen_store to retrieve meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'Hank takes meds from Carl.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'William moves to gen_store.', 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William moves to gen_store to kill Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'William kills Hank.', 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link to heal Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'Hank uses meds to heal Timmy.', 'character_plan': 'hank: use meds to heal timmy', 'executed': False, 'explanation': 'Hank was killed before he could heal Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'Timmy is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Spontaneous action: Timmy is bitten, establishing goals to use meds.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'Hank moves to gen_store.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves to gen_store to retrieve meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'Hank takes meds from Carl.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'William moves to gen_store.', 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William moves to gen_store to kill Hank.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'William kills Hank.', 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link to heal Timmy.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'Hank uses meds to heal Timmy.', 'character_plan': 'hank: use meds to heal timmy', 'executed': False, 'explanation': 'Hank was killed before he could heal Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+True
+success:  2/5
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake and is dying, establishing his goal to use meds to heal himself and Hank's goal to help Timmy."}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'william: kill Hank', 'executed': True, 'explanation': 'William moves from saloon to gen_store to stop Hank from obtaining meds.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': 'william: kill Hank', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link of Hank obtaining meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank attempts to take meds from Carl but is killed by William before succeeding.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy but has been killed by William, so the action fails.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake and is dying, establishing his goal to use meds to heal himself and Hank's goal to help Timmy."}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds to heal Timmy.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'william: kill Hank', 'executed': True, 'explanation': 'William moves from saloon to gen_store to stop Hank from obtaining meds.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': 'william: kill Hank', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link of Hank obtaining meds.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank attempts to take meds from Carl but is killed by William before succeeding.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy but has been killed by William, so the action fails.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('take(meds,carl)', False)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(william, move(gen_store), _, 2).
+:- not act(william, kill(hank), _, 3).
+:- not unexec_act(hank, take(meds,carl), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  2/6
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake, establishing his goal to use meds to heal and Hank's goal to heal him."}, {'subject': 'hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': 'hank: Use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': 'william: Kill Hank', 'executed': True, 'explanation': 'Sheriff William moves from saloon to gen_store to intercept Hank.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'hank: Use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl, allowing him to attempt to heal Timmy.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills another character #1.', 'character_plan': 'william: Kill Hank', 'executed': True, 'explanation': 'Sheriff William kills Hank, preventing him from using meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['meds', 'timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'hank: Use meds to heal Timmy', 'executed': False, 'explanation': 'Hank was killed before he could use meds to heal Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake, establishing his goal to use meds to heal and Hank's goal to heal him."}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': 'hank: Use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': 'william: Kill Hank', 'executed': True, 'explanation': 'Sheriff William moves from saloon to gen_store to intercept Hank.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'hank: Use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl, allowing him to attempt to heal Timmy.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills another character #1.', 'character_plan': 'william: Kill Hank', 'executed': True, 'explanation': 'Sheriff William kills Hank, preventing him from using meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['meds', 'timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'hank: Use meds to heal Timmy', 'executed': False, 'explanation': 'Hank was killed before he could use meds to heal Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(ranch)', True)}, {'william': ('move(saloon)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(meds,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(ranch), _, 1).
+:- not act(william, move(saloon), _, 2).
+:- not act(hank, take(meds,carl), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not act(hank, heal(meds,meds), 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  2/7
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': {'name': 'hank', 'goal': 'heal timmy'}, 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'heal timmy'}, 'executed': True, 'explanation': 'Hank takes meds from carl.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William moves from saloon to gen_store to attempt to kill Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William kills Hank at gen_store.'}, {'subject': 'hank', 'actionId': 6, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Hank does nothing as he has been killed before he could heal Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': {'name': 'hank', 'goal': 'heal timmy'}, 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'heal timmy'}, 'executed': True, 'explanation': 'Hank takes meds from carl.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William moves from saloon to gen_store to attempt to kill Hank.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William kills Hank at gen_store.'}
+{'subject': 'hank', 'actionId': 6, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Hank does nothing as he has been killed before he could heal Timmy.'}
+list index out of range
+New plan generated: 
+{'narrative_plan': [{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and starts dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'character': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'character': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl.'}, {'subject': 'william', 'actionId': 4, 'parameters': ['ranch'], 'character_plan': {'character': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William moves to ranch to kill Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'character': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William kills Hank to prevent him from saving Timmy.'}]}
+narrative_plan
+string indices must be integers
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake and is dying, setting his own goal to use meds to heal and Hank's goal to heal him."}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy, leading Sheriff William to have the goal to kill Hank.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'Sheriff William moves to gen_store to confront Hank for taking meds.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'Sheriff William kills Hank, preventing Timmy from being healed.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake and is dying, setting his own goal to use meds to heal and Hank's goal to heal him."}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy, leading Sheriff William to have the goal to kill Hank.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'Sheriff William moves to gen_store to confront Hank for taking meds.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'Sheriff William kills Hank, preventing Timmy from being healed.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(hank)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  2/8
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': {'name': 'hank', 'character_goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to get meds.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': {'name': 'william', 'character_goal': 'kill carl'}, 'executed': True, 'explanation': 'William moves from saloon to gen_store to kill Carl.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'character_plan': {'name': 'william', 'character_goal': 'kill carl'}, 'executed': True, 'explanation': 'William kills Carl, preventing Hank from obtaining meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'character_goal': 'use meds to heal timmy'}, 'executed': False, 'explanation': 'Hank attempts to take meds from Carl, but Carl has been killed.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': {'name': 'hank', 'character_goal': 'use meds to heal timmy'}, 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy, but he was unable to obtain meds.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': {'name': 'hank', 'character_goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to get meds.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': {'name': 'william', 'character_goal': 'kill carl'}, 'executed': True, 'explanation': 'William moves from saloon to gen_store to kill Carl.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'character_plan': {'name': 'william', 'character_goal': 'kill carl'}, 'executed': True, 'explanation': 'William kills Carl, preventing Hank from obtaining meds.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'character_goal': 'use meds to heal timmy'}, 'executed': False, 'explanation': 'Hank attempts to take meds from Carl, but Carl has been killed.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': {'name': 'hank', 'character_goal': 'use meds to heal timmy'}, 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy, but he was unable to obtain meds.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(ranch)', True)}, {'william': ('move(saloon)', True)}, {'william': ('kill(carl)', True)}, {'hank': ('take(meds,carl)', False)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(ranch), _, 1).
+:- not act(william, move(saloon), _, 2).
+:- not act(william, kill(carl), _, 3).
+:- not unexec_act(hank, take(meds,carl), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  2/9
+New plan generated: 
+[{'subject': 'timmi', 'actionId': 1, 'parameters': ['timmi'], 'character_plan': None, 'executed': True, 'explanation': 'Timmi is bitten by a snake and is dying, establishing the need to use meds to heal.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: heal timmi', 'executed': True, 'explanation': 'Hank moves to gen_store to retrieve meds to heal Timmi.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'william: kill carl', 'executed': True, 'explanation': 'William moves to gen_store intending to kill Carl and remove access to meds.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'character_plan': 'william: kill carl', 'executed': True, 'explanation': 'William kills Carl to prevent Hank from obtaining meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: heal timmi', 'executed': False, 'explanation': 'Hank attempts to take meds from Carl, but fails because Carl has been killed.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmi'], 'character_plan': 'hank: heal timmi', 'executed': False, 'explanation': 'Hank attempts to heal Timmi with meds, but fails as meds are unavailable.'}]
+{'subject': 'timmi', 'actionId': 1, 'parameters': ['timmi'], 'character_plan': None, 'executed': True, 'explanation': 'Timmi is bitten by a snake and is dying, establishing the need to use meds to heal.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: heal timmi', 'executed': True, 'explanation': 'Hank moves to gen_store to retrieve meds to heal Timmi.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'william: kill carl', 'executed': True, 'explanation': 'William moves to gen_store intending to kill Carl and remove access to meds.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'character_plan': 'william: kill carl', 'executed': True, 'explanation': 'William kills Carl to prevent Hank from obtaining meds.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: heal timmi', 'executed': False, 'explanation': 'Hank attempts to take meds from Carl, but fails because Carl has been killed.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmi'], 'character_plan': 'hank: heal timmi', 'executed': False, 'explanation': 'Hank attempts to heal Timmi with meds, but fails as meds are unavailable.'}
+the plan: deque([{'timmi': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(carl)', True)}, {'hank': ('take(meds,carl)', False)}, {'hank': ('heal(timmi,meds)', False)}])
+plan testing asp:  :- not act(timmi, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(william, move(gen_store), _, 2).
+:- not act(william, kill(carl), _, 3).
+:- not unexec_act(hank, take(meds,carl), _, 4).
+:- not act(hank, heal(timmi,meds), 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  2/10
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'explanation': "Timmy is bitten by a snake, initiating his and Hank's goal to use meds to heal."}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': {'character': 'hank', 'goal': 'Use meds to heal Timmy', 'executed': True}, 'explanation': 'Hank moves to gen_store to obtain meds needed to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': {'character': 'hank', 'goal': 'Use meds to heal Timmy', 'executed': True}, 'explanation': 'Hank takes meds from Carl to use on Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': {'character': 'hank', 'goal': 'Use meds to heal Timmy', 'executed': True}, 'explanation': 'Hank uses the meds to heal Timmy, saving him from dying.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'The subject moves to location #1.', 'character_plan': {'character': 'william', 'goal': 'Kill Timmy', 'executed': True}, 'explanation': 'William moves to ranch to attempt to kill Timmy.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'action': 'The subject character kills another character #1.', 'character_plan': {'character': 'william', 'goal': 'Kill Timmy', 'executed': True}, 'explanation': "William kills Timmy, overriding Hank's plan to save him."}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'explanation': "Timmy is bitten by a snake, initiating his and Hank's goal to use meds to heal."}
+'executed'
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake and starts dying, establishing his goal to use meds to heal himself and Hank's goal to heal Timmy."}, {'subject': 'timmy', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'timmy: use meds to heal himself', 'executed': True, 'explanation': 'Timmy moves from ranch to gen_store to obtain meds to heal himself.'}, {'subject': 'william', 'actionId': 3, 'parameters': ['gen_store'], 'character_plan': 'william: kill characters to prevent threat', 'executed': True, 'explanation': 'William moves from saloon to gen_store with the intent to kill to prevent Timmy from healing.'}, {'subject': 'william', 'actionId': 4, 'parameters': ['carl'], 'character_plan': 'william: kill characters to prevent threat', 'executed': True, 'explanation': 'William kills Carl at gen_store, threatening the availability of meds for Timmy.'}, {'subject': 'timmy', 'actionId': 5, 'parameters': ['meds', 'carl'], 'character_plan': 'timmy: use meds to heal himself', 'executed': False, 'explanation': 'Timmy attempts to take meds from Carl, but Carl has been killed by William, so the action fails.'}, {'subject': 'timmy', 'actionId': 6, 'parameters': ['timmy'], 'character_plan': 'timmy: use meds to heal himself', 'executed': False, 'explanation': 'Timmy attempts to use the meds to heal himself, but without obtaining them, he remains dying.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake and starts dying, establishing his goal to use meds to heal himself and Hank's goal to heal Timmy."}
+{'subject': 'timmy', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'timmy: use meds to heal himself', 'executed': True, 'explanation': 'Timmy moves from ranch to gen_store to obtain meds to heal himself.'}
+{'subject': 'william', 'actionId': 3, 'parameters': ['gen_store'], 'character_plan': 'william: kill characters to prevent threat', 'executed': True, 'explanation': 'William moves from saloon to gen_store with the intent to kill to prevent Timmy from healing.'}
+{'subject': 'william', 'actionId': 4, 'parameters': ['carl'], 'character_plan': 'william: kill characters to prevent threat', 'executed': True, 'explanation': 'William kills Carl at gen_store, threatening the availability of meds for Timmy.'}
+{'subject': 'timmy', 'actionId': 5, 'parameters': ['meds', 'carl'], 'character_plan': 'timmy: use meds to heal himself', 'executed': False, 'explanation': 'Timmy attempts to take meds from Carl, but Carl has been killed by William, so the action fails.'}
+{'subject': 'timmy', 'actionId': 6, 'parameters': ['timmy'], 'character_plan': 'timmy: use meds to heal himself', 'executed': False, 'explanation': 'Timmy attempts to use the meds to heal himself, but without obtaining them, he remains dying.'}
+list index out of range
+New plan generated: 
+{'narrative_plan': [{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake and is now dying, establishing the need for meds to heal him and Hank's goal to save Timmy."}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location gen_store.', 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves to the general store to retrieve meds to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location gen_store.', 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': "Sheriff William moves to the general store, possibly to interfere with Hank's plan."}, {'subject': 'william', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item meds from character carl.', 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': 'William takes the meds from Carl, preventing Hank from using them to heal Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character timmy.', 'character_plan': 'hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy, but the meds have been taken by William, so this action fails.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'action': 'The subject character kills another character timmy.', 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': 'William successfully kills Timmy at the ranch.'}]}
+narrative_plan
+string indices must be integers
+New plan generated: 
+{'narrative_plan': [{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': False, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to retrieve meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank uses meds to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William moves from saloon to gen_store to confront Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William kills Hank at gen_store, threatening the causal link to heal Timmy.'}]}
+narrative_plan
+string indices must be integers
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to get meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['ranch'], 'action': 'The subject moves to location #1.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves back to ranch with meds.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank uses meds to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'The subject moves to location #1.', 'character_plan': 'william: prevent timmy from being healed', 'executed': True, 'explanation': 'William moves to ranch to intervene.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills another character #1.', 'character_plan': 'william: prevent timmy from being healed', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link between Hank taking meds and healing Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to get meds.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['ranch'], 'action': 'The subject moves to location #1.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves back to ranch with meds.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank uses meds to heal Timmy.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'The subject moves to location #1.', 'character_plan': 'william: prevent timmy from being healed', 'executed': True, 'explanation': 'William moves to ranch to intervene.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills another character #1.', 'character_plan': 'william: prevent timmy from being healed', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link between Hank taking meds and healing Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'hank': ('move(ranch)', True)}, {'hank': ('heal(timmy,meds)', True)}, {'william': ('move(ranch)', True)}, {'william': ('kill(hank)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(hank, move(ranch), _, 3).
+:- not act(hank, heal(timmy,meds), _, 4).
+:- not act(william, move(ranch), _, 5).
+:- not act(william, kill(hank), _, 6).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+True
+success:  3/11
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'Timmy is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake, initiating his need for meds to heal.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'Hank moves to gen_store.', 'character_plan': 'hank: heal Timmy', 'executed': True, 'explanation': 'Hank moves to the store to retrieve meds for Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'Hank takes meds from Carl.', 'character_plan': 'hank: heal Timmy', 'executed': True, 'explanation': 'Hank takes the required meds from Carl to heal Timmy.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'William kills Hank.', 'character_plan': 'william: kill Hank', 'executed': True, 'explanation': 'William intervenes by killing Hank, disrupting the plan to save Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'Hank uses meds to heal Timmy.', 'character_plan': 'hank: heal Timmy', 'executed': False, 'explanation': "Hank's attempt to heal Timmy fails because he was killed by William."}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'Timmy is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake, initiating his need for meds to heal.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'Hank moves to gen_store.', 'character_plan': 'hank: heal Timmy', 'executed': True, 'explanation': 'Hank moves to the store to retrieve meds for Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'Hank takes meds from Carl.', 'character_plan': 'hank: heal Timmy', 'executed': True, 'explanation': 'Hank takes the required meds from Carl to heal Timmy.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'William kills Hank.', 'character_plan': 'william: kill Hank', 'executed': True, 'explanation': 'William intervenes by killing Hank, disrupting the plan to save Timmy.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'Hank uses meds to heal Timmy.', 'character_plan': 'hank: heal Timmy', 'executed': False, 'explanation': "Hank's attempt to heal Timmy fails because he was killed by William."}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, kill(hank), _, 3).
+:- not unexec_act(hank, heal(timmy,meds), _, 4).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  3/12
+New plan generated: 
+{'narrative_plan': [{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake, establishing his goal to use meds and Hank's goal to heal him."}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location gen_store.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves to the general store to acquire meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item meds from character carl.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl, enabling him to heal Timmy and establishing the necessary causal link.'}, {'subject': 'hank', 'actionId': 4, 'parameters': [], 'action': 'The subject character use meds to heal another character timmy.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank uses meds to heal Timmy, ensuring Timmy remains alive.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location gen_store.', 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William moves to the general store to intercept Hank and take the meds.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills another character hank.', 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link between Hank obtaining meds and healing Timmy, creating a conflict.'}]}
+narrative_plan
+string indices must be integers
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['hank', 'ranch', 'gen_store'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['william', 'saloon', 'gen_store'], 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': 'William moves from saloon to gen_store with the intention to kill Timmy.'}, {'subject': 'william', 'actionId': 3, 'parameters': ['meds', 'hank'], 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': "William takes meds from Hank, threatening Hank's ability to heal Timmy."}, {'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': 'William kills Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['hank', 'ranch', 'gen_store'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['william', 'saloon', 'gen_store'], 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': 'William moves from saloon to gen_store with the intention to kill Timmy.'}
+{'subject': 'william', 'actionId': 3, 'parameters': ['meds', 'hank'], 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': "William takes meds from Hank, threatening Hank's ability to heal Timmy."}
+{'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'character_plan': 'william: kill Timmy', 'executed': True, 'explanation': 'William kills Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(hank)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(william)', True)}, {'william': ('take(meds,hank)', True)}, {'william': ('kill(timmy)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(hank), 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(william), 3).
+:- not act(william, take(meds,hank), _, 4).
+:- not act(william, kill(timmy), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  3/13
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'is bitten by a snake and is dying', 'character_plan': None, 'executed': False, 'explanation': 'A spontaneous event where Timmy is bitten by a snake and begins dying, triggering the need for medical intervention.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'moves to gen_store', 'character_plan': "hank's goal to use meds to heal timmy", 'executed': True, 'explanation': 'Hank moves from the ranch to the gen_store to obtain the necessary meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'takes meds from carl', 'character_plan': "hank's goal to use meds to heal timmy", 'executed': True, 'explanation': "Hank takes the meds from Carl at the gen_store to prepare for Timmy's treatment."}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'uses meds to heal timmy', 'character_plan': "hank's goal to use meds to heal timmy", 'executed': True, 'explanation': 'Hank administers the meds to Timmy at the ranch, aiming to cure his snakebite.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'moves to ranch', 'character_plan': "william's goal to kill timmy", 'executed': True, 'explanation': 'William, the sheriff, relocates to the ranch with the intention to eliminate Timmy.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'action': 'kills timmy', 'character_plan': "william's goal to kill timmy", 'executed': True, 'explanation': "William executes his plan to kill Timmy, thwarting Hank's efforts to save him and creating a conflict in the narrative."}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'is bitten by a snake and is dying', 'character_plan': None, 'executed': False, 'explanation': 'A spontaneous event where Timmy is bitten by a snake and begins dying, triggering the need for medical intervention.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'moves to gen_store', 'character_plan': "hank's goal to use meds to heal timmy", 'executed': True, 'explanation': 'Hank moves from the ranch to the gen_store to obtain the necessary meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'takes meds from carl', 'character_plan': "hank's goal to use meds to heal timmy", 'executed': True, 'explanation': "Hank takes the meds from Carl at the gen_store to prepare for Timmy's treatment."}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'uses meds to heal timmy', 'character_plan': "hank's goal to use meds to heal timmy", 'executed': True, 'explanation': 'Hank administers the meds to Timmy at the ranch, aiming to cure his snakebite.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'moves to ranch', 'character_plan': "william's goal to kill timmy", 'executed': True, 'explanation': 'William, the sheriff, relocates to the ranch with the intention to eliminate Timmy.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'action': 'kills timmy', 'character_plan': "william's goal to kill timmy", 'executed': True, 'explanation': "William executes his plan to kill Timmy, thwarting Hank's efforts to save him and creating a conflict in the narrative."}
+the plan: deque([{'timmy': ('snakebite', False)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'hank': ('heal(timmy,meds)', True)}, {'william': ('move(ranch)', True)}, {'william': ('kill(timmy)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(hank, heal(timmy,meds), _, 3).
+:- not act(william, move(ranch), _, 4).
+:- not act(william, kill(timmy), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  3/14
+New plan generated: 
+[{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'Hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds.'}, {'subject': 'Hank', 'actionId': 3, 'parameters': ['meds', 'Carl'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}, {'subject': 'William', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William moves from saloon to gen_store to kill Hank.'}, {'subject': 'William', 'actionId': 5, 'parameters': ['Hank'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William kills Hank at gen_store.'}, {'subject': 'Hank', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank cannot use meds to heal Timmy because he was killed by William.'}]
+{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'Hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds.'}
+{'subject': 'Hank', 'actionId': 3, 'parameters': ['meds', 'Carl'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}
+{'subject': 'William', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William moves from saloon to gen_store to kill Hank.'}
+{'subject': 'William', 'actionId': 5, 'parameters': ['Hank'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William kills Hank at gen_store.'}
+{'subject': 'Hank', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank cannot use meds to heal Timmy because he was killed by William.'}
+the plan: deque([{'Timmy': ('snakebite', True)}, {'Hank': ('move(gen_store)', True)}, {'Hank': ('take(meds,Carl)', True)}, {'William': ('move(gen_store)', True)}, {'William': ('kill(Hank)', True)}, {'Hank': ('heal(meds,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), 4).
+:- not act(hank, heal(meds,meds), 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  3/15
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location gen_store.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item meds from character carl.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location gen_store.', 'character_plan': 'william: kill hank', 'executed': True}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills another character hank.', 'character_plan': 'william: kill hank', 'executed': True}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character uses meds to heal another character timmy.', 'character_plan': 'hank: use meds to heal timmy', 'executed': False}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location gen_store.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item meds from character carl.', 'character_plan': 'hank: use meds to heal timmy', 'executed': True}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location gen_store.', 'character_plan': 'william: kill hank', 'executed': True}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills another character hank.', 'character_plan': 'william: kill hank', 'executed': True}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character uses meds to heal another character timmy.', 'character_plan': 'hank: use meds to heal timmy', 'executed': False}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+True
+success:  4/16
+New plan generated: 
+{'narrative_plan': [{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and starts dying, establishing the need to use meds to heal him.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['hank', 'meds', 'carl'], 'character_plan': 'hank: heal timmy', 'executed': True, 'explanation': "Hank takes meds from Carl to heal Timmy, establishing Hank's goal to heal Timmy."}, {'subject': 'william', 'actionId': 5, 'parameters': ['william', 'hank'], 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William, the sheriff, kills Hank, threatening the causal link between Hank taking meds and healing Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['hank', 'timmy'], 'character_plan': 'hank: heal timmy', 'executed': False, 'explanation': 'Due to William killing Hank, the action of Hank using meds to heal Timmy is thwarted.'}]}
+narrative_plan
+string indices must be integers
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves to the gen_store to acquire meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William moves to the ranch to confront Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William kills Hank, preventing him from healing Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': 'hank: use meds to heal timmy', 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy, but is killed before he can do so.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank moves to the gen_store to acquire meds.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William moves to the ranch to confront Hank.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': 'william: kill hank', 'executed': True, 'explanation': 'William kills Hank, preventing him from healing Timmy.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': 'hank: use meds to heal timmy', 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy, but is killed before he can do so.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(ranch)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(ranch), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  4/17
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True}, {'subject': 'hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': {'character': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'character': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True}, {'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': {'character': 'william', 'goal': 'kill hank'}, 'executed': True}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'character': 'william', 'goal': 'kill hank'}, 'executed': True}, {'subject': 'hank', 'actionId': 4, 'parameters': ['meds', 'timmy'], 'character_plan': {'character': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': False}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': {'character': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'character': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True}
+{'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': {'character': 'william', 'goal': 'kill hank'}, 'executed': True}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'character': 'william', 'goal': 'kill hank'}, 'executed': True}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['meds', 'timmy'], 'character_plan': {'character': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': False}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(ranch)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(saloon)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(meds,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(ranch), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(saloon), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not act(hank, heal(meds,meds), 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  4/18
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True}, {'subject': 'william', 'actionId': 4, 'parameters': ['gen_store'], 'character_plan': 'william: kill hank', 'executed': True}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': 'william: kill hank', 'executed': True}, {'subject': 'hank', 'actionId': 6, 'parameters': ['timmy'], 'character_plan': 'hank: use meds to heal timmy', 'executed': False}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True}
+{'subject': 'william', 'actionId': 4, 'parameters': ['gen_store'], 'character_plan': 'william: kill hank', 'executed': True}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': 'william: kill hank', 'executed': True}
+{'subject': 'hank', 'actionId': 6, 'parameters': ['timmy'], 'character_plan': 'hank: use meds to heal timmy', 'executed': False}
+list index out of range
+New plan generated: 
+{'list': [{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': "Timmy is bitten by a snake and starts dying, establishing his goal to use meds and his parent's goal to heal him."}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': 'william kill carl', 'executed': True, 'explanation': 'Sheriff William moves from saloon to gen_store to kill Carl.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'action': 'The subject character kills another character #1.', 'character_plan': 'william kill carl', 'executed': True, 'explanation': 'Sheriff William kills Carl to prevent him from providing meds to Timmy.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': 'hank heal timmy', 'executed': False, 'explanation': "Hank attempts to move to gen_store to retrieve meds to heal Timmy, but is prevented by William's actions."}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': 'hank heal timmy', 'executed': False, 'explanation': 'Hank attempts to take meds from Carl, but Carl has been killed by William.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['meds', 'timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'hank heal timmy', 'executed': False, 'explanation': "Hank attempts to use meds to heal Timmy, but fails because he couldn't obtain the meds."}]}
+list
+string indices must be integers
+New plan generated: 
+[{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'hank moves to gen_store to get meds'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'hank takes meds from carl'}, {'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'character_plan': 'william: kill timmy', 'executed': True, 'explanation': 'william moves to ranch to kill timmy'}, {'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'character_plan': 'william: kill timmy', 'executed': True, 'explanation': 'william kills timmy'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': 'hank: use meds to heal timmy', 'executed': False, 'explanation': 'hank attempts to heal timmy, but timmy is already dead'}]
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'hank moves to gen_store to get meds'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'hank: use meds to heal timmy', 'executed': True, 'explanation': 'hank takes meds from carl'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'character_plan': 'william: kill timmy', 'executed': True, 'explanation': 'william moves to ranch to kill timmy'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['timmy'], 'character_plan': 'william: kill timmy', 'executed': True, 'explanation': 'william kills timmy'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': 'hank: use meds to heal timmy', 'executed': False, 'explanation': 'hank attempts to heal timmy, but timmy is already dead'}
+the plan: deque([{'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(ranch)', True)}, {'william': ('kill(timmy)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(hank, move(gen_store), _, 0).
+:- not act(hank, take(meds,carl), _, 1).
+:- not act(william, move(ranch), _, 2).
+:- not act(william, kill(timmy), _, 3).
+:- not unexec_act(hank, heal(timmy,meds), _, 4).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  4/19
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'hank', 'goal': 'Use meds to save Timmy'}, 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds to save Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'Use meds to save Timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl to save Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'william', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William moves to gen_store with the intention to kill Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William kills Hank at gen_store, preventing him from saving Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': {'name': 'hank', 'goal': 'Use meds to save Timmy'}, 'executed': False, 'explanation': 'Hank is killed before he can use meds to heal Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'hank', 'goal': 'Use meds to save Timmy'}, 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds to save Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'Use meds to save Timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl to save Timmy.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'william', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William moves to gen_store with the intention to kill Hank.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William kills Hank at gen_store, preventing him from saving Timmy.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': {'name': 'hank', 'goal': 'Use meds to save Timmy'}, 'executed': False, 'explanation': 'Hank is killed before he can use meds to heal Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+True
+success:  5/20
+New plan generated: 
+[{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'Hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds.'}, {'subject': 'Hank', 'actionId': 3, 'parameters': ['meds', 'Carl'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}, {'subject': 'Hank', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank uses meds to heal Timmy.'}, {'subject': 'William', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William moves to gen_store with the intent to kill Hank.'}, {'subject': 'William', 'actionId': 5, 'parameters': ['Hank'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link required to heal Timmy.'}]
+{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'Hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds.'}
+{'subject': 'Hank', 'actionId': 3, 'parameters': ['meds', 'Carl'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}
+{'subject': 'Hank', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank uses meds to heal Timmy.'}
+{'subject': 'William', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William moves to gen_store with the intent to kill Hank.'}
+{'subject': 'William', 'actionId': 5, 'parameters': ['Hank'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William kills Hank, threatening the causal link required to heal Timmy.'}
+the plan: deque([{'Timmy': ('snakebite', True)}, {'Hank': ('move(ranch)', True)}, {'Hank': ('take(meds,Carl)', True)}, {'Hank': ('heal(meds,meds)', True)}, {'William': ('move(saloon)', True)}, {'William': ('kill(Hank)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(ranch), _, 1).
+:- not act(hank, take(meds,carl), 2).
+:- not act(hank, heal(meds,meds), 3).
+:- not act(william, move(saloon), _, 4).
+:- not act(william, kill(hank), 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  5/21
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'is_bitten_by_snake', 'character_plan': None, 'executed': True}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'move_to', 'character_plan': 'hank: use meds to heal timmy', 'executed': True}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'take_item', 'character_plan': 'hank: use meds to heal timmy', 'executed': True}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'use_meds_to_heal', 'character_plan': 'hank: use meds to heal timmy', 'executed': False}, {'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'move_to', 'character_plan': 'william: kill timmy', 'executed': True}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'kill', 'character_plan': 'william: kill timmy', 'executed': True}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'is_bitten_by_snake', 'character_plan': None, 'executed': True}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'move_to', 'character_plan': 'hank: use meds to heal timmy', 'executed': True}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'take_item', 'character_plan': 'hank: use meds to heal timmy', 'executed': True}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'use_meds_to_heal', 'character_plan': 'hank: use meds to heal timmy', 'executed': False}
+{'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'move_to', 'character_plan': 'william: kill timmy', 'executed': True}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'kill', 'character_plan': 'william: kill timmy', 'executed': True}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'hank': ('heal(timmy,meds)', False)}, {'william': ('move(ranch)', True)}, {'william': ('kill(hank)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not unexec_act(hank, heal(timmy,meds), _, 3).
+:- not act(william, move(ranch), _, 4).
+:- not act(william, kill(hank), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  5/22
+New plan generated: 
+[{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'Hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store.'}, {'subject': 'Hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}, {'subject': 'William', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William moves from saloon to gen_store.'}, {'subject': 'William', 'actionId': 5, 'parameters': ['Hank'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William kills Hank at gen_store.'}, {'subject': 'Hank', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank was killed before he could use meds to heal Timmy.'}]
+{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'Hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves from ranch to gen_store.'}
+{'subject': 'Hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank takes meds from Carl.'}
+{'subject': 'William', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William moves from saloon to gen_store.'}
+{'subject': 'William', 'actionId': 5, 'parameters': ['Hank'], 'character_plan': 'William: kill Hank', 'executed': True, 'explanation': 'William kills Hank at gen_store.'}
+{'subject': 'Hank', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': 'Hank: use meds to heal Timmy', 'executed': False, 'explanation': 'Hank was killed before he could use meds to heal Timmy.'}
+the plan: deque([{'Timmy': ('snakebite', True)}, {'Hank': ('move(gen_store)', True)}, {'Hank': ('take(meds,carl)', True)}, {'William': ('move(gen_store)', True)}, {'William': ('kill(Hank)', True)}, {'Hank': ('heal(meds,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), 4).
+:- not act(hank, heal(meds,meds), 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  5/23
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'timmy', 'actionId': 2, 'parameters': ['timmy', 'ranch', 'gen_store'], 'character_plan': 'timmy: Use meds to heal himself', 'executed': True, 'explanation': 'Timmy moves from ranch to gen_store to obtain meds.'}, {'subject': 'timmy', 'actionId': 3, 'parameters': ['timmy', 'meds', 'carl'], 'character_plan': 'timmy: Use meds to heal himself', 'executed': True, 'explanation': 'Timmy takes meds from Carl at gen_store.'}, {'subject': 'timmy', 'actionId': 4, 'parameters': ['timmy', 'meds'], 'character_plan': 'timmy: Use meds to heal himself', 'executed': True, 'explanation': 'Timmy uses meds to heal himself, stopping his dying condition.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['william', 'saloon', 'gen_store'], 'character_plan': 'william: Kill Timmy', 'executed': True, 'explanation': 'William moves from saloon to gen_store to confront Timmy.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['william', 'timmy'], 'character_plan': 'william: Kill Timmy', 'executed': True, 'explanation': 'William kills Timmy at gen_store, threatening the causal link between Timmy taking and using meds.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': ['timmy'], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'timmy', 'actionId': 2, 'parameters': ['timmy', 'ranch', 'gen_store'], 'character_plan': 'timmy: Use meds to heal himself', 'executed': True, 'explanation': 'Timmy moves from ranch to gen_store to obtain meds.'}
+{'subject': 'timmy', 'actionId': 3, 'parameters': ['timmy', 'meds', 'carl'], 'character_plan': 'timmy: Use meds to heal himself', 'executed': True, 'explanation': 'Timmy takes meds from Carl at gen_store.'}
+{'subject': 'timmy', 'actionId': 4, 'parameters': ['timmy', 'meds'], 'character_plan': 'timmy: Use meds to heal himself', 'executed': True, 'explanation': 'Timmy uses meds to heal himself, stopping his dying condition.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['william', 'saloon', 'gen_store'], 'character_plan': 'william: Kill Timmy', 'executed': True, 'explanation': 'William moves from saloon to gen_store to confront Timmy.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['william', 'timmy'], 'character_plan': 'william: Kill Timmy', 'executed': True, 'explanation': 'William kills Timmy at gen_store, threatening the causal link between Timmy taking and using meds.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'timmy': ('move(timmy)', True)}, {'timmy': ('take(timmy,meds)', True)}, {'timmy': ('heal(timmy,meds)', True)}, {'william': ('move(william)', True)}, {'william': ('kill(william)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(timmy, move(timmy), 1).
+:- not act(timmy, take(timmy,meds), 2).
+:- not act(timmy, heal(timmy,meds), _, 3).
+:- not act(william, move(william), 4).
+:- not act(william, kill(william), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  5/24
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'carl', 'actionId': 2, 'parameters': ['gen_store', 'ranch'], 'action': 'The subject moves to location #1.', 'character_plan': 'carl: use meds to heal Timmy', 'executed': True, 'explanation': 'Carl moves from gen_store to ranch to be near Timmy and use meds to heal him.'}, {'subject': 'carl', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'carl: use meds to heal Timmy', 'executed': False, 'explanation': 'Carl was killed by William before he could use meds to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'ranch'], 'action': 'The subject moves to location #1.', 'character_plan': 'william: kill Carl', 'executed': True, 'explanation': 'William moves from saloon to ranch to kill Carl.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'action': 'The subject character kills another character #1.', 'character_plan': 'william: kill Carl', 'executed': True, 'explanation': 'William kills Carl, preventing him from healing Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'carl', 'actionId': 2, 'parameters': ['gen_store', 'ranch'], 'action': 'The subject moves to location #1.', 'character_plan': 'carl: use meds to heal Timmy', 'executed': True, 'explanation': 'Carl moves from gen_store to ranch to be near Timmy and use meds to heal him.'}
+{'subject': 'carl', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': 'carl: use meds to heal Timmy', 'executed': False, 'explanation': 'Carl was killed by William before he could use meds to heal Timmy.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['saloon', 'ranch'], 'action': 'The subject moves to location #1.', 'character_plan': 'william: kill Carl', 'executed': True, 'explanation': 'William moves from saloon to ranch to kill Carl.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['carl'], 'action': 'The subject character kills another character #1.', 'character_plan': 'william: kill Carl', 'executed': True, 'explanation': 'William kills Carl, preventing him from healing Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'carl': ('move(gen_store)', True)}, {'carl': ('heal(timmy,meds)', False)}, {'william': ('move(saloon)', True)}, {'william': ('kill(carl)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(carl, move(gen_store), _, 1).
+:- not unexec_act(carl, heal(timmy,meds), _, 2).
+:- not act(william, move(saloon), _, 3).
+:- not act(william, kill(carl), _, 4).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  5/25
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'Timmy is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Spontaneous action initiating the need for meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'Hank moves to gen_store.', 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'Hank takes meds from Carl.', 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'William moves to ranch.', 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William moves to ranch with the goal to kill Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'William kills Hank.', 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William kills Hank before he can use the meds, threatening the causal link.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'Hank uses meds to heal timmy.', 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': False, 'explanation': 'Hank is killed before using the meds to heal Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'Timmy is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Spontaneous action initiating the need for meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'Hank moves to gen_store.', 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank moves to gen_store to obtain meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'Hank takes meds from Carl.', 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['ranch'], 'action': 'William moves to ranch.', 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William moves to ranch with the goal to kill Hank.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'William kills Hank.', 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William kills Hank before he can use the meds, threatening the causal link.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'Hank uses meds to heal timmy.', 'character_plan': {'name': 'hank', 'goal': 'use meds to heal timmy'}, 'executed': False, 'explanation': 'Hank is killed before using the meds to heal Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(ranch)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(ranch), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  5/26
+New plan generated: 
+{'narrative_plan': [{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1', 'character_plan': "hank's goal to heal Timmy", 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2', 'character_plan': "hank's goal to heal Timmy", 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character #1', 'character_plan': "hank's goal to heal Timmy", 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy but is interrupted before success.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1', 'character_plan': "william's goal to maintain order", 'executed': True, 'explanation': 'William moves from saloon to gen_store to intervene in the situation.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'The subject character kills another character #1', 'character_plan': "william's goal to maintain order", 'executed': True, 'explanation': 'William kills Hank, preventing him from using the meds to heal Timmy, creating a conflict.'}]}
+narrative_plan
+string indices must be integers
+New plan generated: 
+[{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'Hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': {'character': 'Hank', 'goal': 'Use meds to heal Timmy'}, 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds to heal Timmy.'}, {'subject': 'William', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': {'character': 'William', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William, the sheriff, moves from saloon to gen_store with the intention to kill Hank.'}, {'subject': 'William', 'actionId': 3, 'parameters': ['meds', 'Carl'], 'character_plan': {'character': 'William', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William takes the meds from Carl, preventing Hank from healing Timmy.'}, {'subject': 'William', 'actionId': 5, 'parameters': ['Hank'], 'character_plan': {'character': 'William', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William kills Hank, thwarting the plan to heal Timmy.'}, {'subject': 'Hank', 'actionId': 3, 'parameters': ['meds', 'Carl'], 'character_plan': {'character': 'Hank', 'goal': 'Use meds to heal Timmy'}, 'executed': False, 'explanation': 'Hank tries to take meds from Carl, but William has already taken them.'}, {'subject': 'Hank', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': {'character': 'Hank', 'goal': 'Use meds to heal Timmy'}, 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy, but fails because he did not obtain the meds.'}]
+{'subject': 'Timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'Hank', 'actionId': 2, 'parameters': ['ranch', 'gen_store'], 'character_plan': {'character': 'Hank', 'goal': 'Use meds to heal Timmy'}, 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds to heal Timmy.'}
+{'subject': 'William', 'actionId': 2, 'parameters': ['saloon', 'gen_store'], 'character_plan': {'character': 'William', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William, the sheriff, moves from saloon to gen_store with the intention to kill Hank.'}
+{'subject': 'William', 'actionId': 3, 'parameters': ['meds', 'Carl'], 'character_plan': {'character': 'William', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William takes the meds from Carl, preventing Hank from healing Timmy.'}
+{'subject': 'William', 'actionId': 5, 'parameters': ['Hank'], 'character_plan': {'character': 'William', 'goal': 'Kill Hank'}, 'executed': True, 'explanation': 'William kills Hank, thwarting the plan to heal Timmy.'}
+{'subject': 'Hank', 'actionId': 3, 'parameters': ['meds', 'Carl'], 'character_plan': {'character': 'Hank', 'goal': 'Use meds to heal Timmy'}, 'executed': False, 'explanation': 'Hank tries to take meds from Carl, but William has already taken them.'}
+{'subject': 'Hank', 'actionId': 4, 'parameters': ['meds', 'Timmy'], 'character_plan': {'character': 'Hank', 'goal': 'Use meds to heal Timmy'}, 'executed': False, 'explanation': 'Hank attempts to use meds to heal Timmy, but fails because he did not obtain the meds.'}
+the plan: deque([{'Timmy': ('snakebite', True)}, {'Hank': ('move(ranch)', True)}, {'William': ('move(saloon)', True)}, {'William': ('take(meds,Carl)', True)}, {'William': ('kill(Hank)', True)}, {'Hank': ('take(meds,Carl)', False)}, {'Hank': ('heal(meds,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(ranch), _, 1).
+:- not act(william, move(saloon), _, 2).
+:- not act(william, take(meds,carl), 3).
+:- not act(william, kill(hank), 4).
+:- not act(hank, take(meds,carl), 5).
+:- not act(hank, heal(meds,meds), 6).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  5/27
+New plan generated: 
+{'actions': [{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'Timmy is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'A spontaneous action causing Timmy to become dying and setting goals to use meds.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'Hank moves to gen_store.', 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': 'Hank moves towards Carl to retrieve meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'Hank takes meds from Carl.', 'character_plan': 'hank: use meds to heal Timmy', 'executed': True, 'explanation': "Hank retrieves meds from Carl to heal Timmy, triggering William's goal to kill Hank."}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'William moves to gen_store.', 'character_plan': 'william: kill Hank', 'executed': True, 'explanation': 'William moves to gen_store to kill Hank before he can heal Timmy.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'action': 'William kills Hank.', 'character_plan': 'william: kill Hank', 'executed': True, 'explanation': "William successfully kills Hank, preventing Timmy from obtaining meds, leading to Timmy's death."}]}
+actions
+string indices must be integers
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and starts dying, prompting him and Hank to seek meds.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal Timmy'}, 'executed': True, 'explanation': 'Hank moves to the general store to obtain meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal Timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy, prompting the sheriff to want to kill Hank.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William, the sheriff, moves to the general store to confront Hank after Hank took the meds.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William kills Hank before he can use the meds to heal Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and starts dying, prompting him and Hank to seek meds.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal Timmy'}, 'executed': True, 'explanation': 'Hank moves to the general store to obtain meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': {'name': 'hank', 'goal': 'use meds to heal Timmy'}, 'executed': True, 'explanation': 'Hank takes meds from Carl to heal Timmy, prompting the sheriff to want to kill Hank.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William, the sheriff, moves to the general store to confront Hank after Hank took the meds.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': {'name': 'william', 'goal': 'kill hank'}, 'executed': True, 'explanation': 'William kills Hank before he can use the meds to heal Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(hank)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+success:  5/28
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': "hank's goal is to use meds to heal timmy", 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': "hank's goal is to use meds to heal timmy", 'executed': True, 'explanation': 'Hank takes meds from Carl.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': "william's goal is to kill hank", 'executed': True, 'explanation': 'William moves from saloon to gen_store to intercept Hank.'}, {'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': "william's goal is to kill hank", 'executed': True, 'explanation': "William kills Hank, threatening the causal link needed for Timmy's healing."}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': "hank's goal is to use meds to heal timmy", 'executed': False, 'explanation': 'Hank cannot use meds to heal Timmy because he was killed by William.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake and is dying.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': "hank's goal is to use meds to heal timmy", 'executed': True, 'explanation': 'Hank moves from ranch to gen_store to obtain meds.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'character_plan': "hank's goal is to use meds to heal timmy", 'executed': True, 'explanation': 'Hank takes meds from Carl.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'character_plan': "william's goal is to kill hank", 'executed': True, 'explanation': 'William moves from saloon to gen_store to intercept Hank.'}
+{'subject': 'william', 'actionId': 5, 'parameters': ['hank'], 'character_plan': "william's goal is to kill hank", 'executed': True, 'explanation': "William kills Hank, threatening the causal link needed for Timmy's healing."}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'character_plan': "hank's goal is to use meds to heal timmy", 'executed': False, 'explanation': 'Hank cannot use meds to heal Timmy because he was killed by William.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('kill(hank)', True)}, {'hank': ('heal(timmy,meds)', False)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(william, move(gen_store), _, 3).
+:- not act(william, kill(hank), _, 4).
+:- not unexec_act(hank, heal(timmy,meds), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+True
+success:  6/29
+New plan generated: 
+[{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake, initiating the need for medical intervention.'}, {'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': "hank's plan to use meds to heal Timmy", 'executed': True, 'explanation': 'Hank moves to the general store to acquire meds to heal Timmy.'}, {'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': "hank's plan to use meds to heal Timmy", 'executed': True, 'explanation': 'Hank takes meds from Carl to use for healing Timmy.'}, {'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': "hank's plan to use meds to heal Timmy", 'executed': True, 'explanation': 'Hank uses meds to heal Timmy, ensuring his survival.'}, {'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': "william's plan to prevent Timmy's healing", 'executed': True, 'explanation': 'Sheriff William moves to gen_store to take the meds before Hank can.'}, {'subject': 'william', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': "william's plan to prevent Timmy's healing", 'executed': True, 'explanation': 'William takes meds from Carl, preventing Hank from healing Timmy.'}]
+{'subject': 'timmy', 'actionId': 1, 'parameters': [], 'action': 'The subject character is bitten by a snake and is dying.', 'character_plan': None, 'executed': True, 'explanation': 'Timmy is bitten by a snake, initiating the need for medical intervention.'}
+{'subject': 'hank', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': "hank's plan to use meds to heal Timmy", 'executed': True, 'explanation': 'Hank moves to the general store to acquire meds to heal Timmy.'}
+{'subject': 'hank', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': "hank's plan to use meds to heal Timmy", 'executed': True, 'explanation': 'Hank takes meds from Carl to use for healing Timmy.'}
+{'subject': 'hank', 'actionId': 4, 'parameters': ['timmy'], 'action': 'The subject character use meds to heal another character #1.', 'character_plan': "hank's plan to use meds to heal Timmy", 'executed': True, 'explanation': 'Hank uses meds to heal Timmy, ensuring his survival.'}
+{'subject': 'william', 'actionId': 2, 'parameters': ['gen_store'], 'action': 'The subject moves to location #1.', 'character_plan': "william's plan to prevent Timmy's healing", 'executed': True, 'explanation': 'Sheriff William moves to gen_store to take the meds before Hank can.'}
+{'subject': 'william', 'actionId': 3, 'parameters': ['meds', 'carl'], 'action': 'The subject takes item #1 from character #2.', 'character_plan': "william's plan to prevent Timmy's healing", 'executed': True, 'explanation': 'William takes meds from Carl, preventing Hank from healing Timmy.'}
+the plan: deque([{'timmy': ('snakebite', True)}, {'hank': ('move(gen_store)', True)}, {'hank': ('take(meds,carl)', True)}, {'hank': ('heal(timmy,meds)', True)}, {'william': ('move(gen_store)', True)}, {'william': ('take(meds,carl)', True)}])
+plan testing asp:  :- not act(timmy, snakebite, 0).
+:- not act(hank, move(gen_store), _, 1).
+:- not act(hank, take(meds,carl), _, 2).
+:- not act(hank, heal(timmy,meds), _, 3).
+:- not act(william, move(gen_store), _, 4).
+:- not act(william, take(meds,carl), _, 5).
+:- not conflict(_, _, _, _, _).
+
+<block>:259:12-50: info: atom does not occur in any rule head:
+  justified(C2,alive(Target,f),I2,T)
+
+False
+(ml) wangyi

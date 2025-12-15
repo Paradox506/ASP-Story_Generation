@@ -1,0 +1,7 @@
+- You can move from the headquarter to the dropbox without encountering guards
+- You can move from the headquarter to the courtyard without encountering guards
+- You can move from the dropbox to the courtyard without encountering guards
+- You can move from the lobby to the cache without encountering guards
+- You can move from the lobby to the office without encountering guards
+- You can move from the cache to the office without encountering guards
+- You can only move from courtyard to the lobby through guards by presenting dox

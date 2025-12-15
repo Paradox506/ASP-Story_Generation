@@ -1,0 +1,20 @@
+Without any specifc narrative goal, generate a narrative plan with some conflict, where each action in the plan takes one of the forms in the following list:
+
+1. The subject character is bitten by a snake and is dying. Spontaneous action: This action shouldn't be in any character plan. Precondition: none. Effect: make subject character dying, and establish the subject character's goal to use meds to heal them.
+2. The subject moves to location #1. Precondition: the subject character can go to #1 from their current location. Effect: the subject character becomes located at #2.
+3. The subject takes meds from the merchant carl. Precondition: The subject character must be alive and at the same location with carl; carl must still has more than zero number of meds. the subject character must not already have some meds. Effect: the subject character now has meds; carl loses 1 meds.
+4. The subject takes meds from another character #1 who is not carl. Precondition: The subject character must be alive and at the same location with #1; #1 must be in possesion of at least one meds; the subject character must not already have some meds; carl's meds must all have been taken. Effect: the subject character now has a meds; #1 now loses a meds. 
+5. The subject character use meds to heal another character #1 (possibly themselves). Precondition: the subject character must be in possesion of at least one meds; the subject character must be at the same location as #1; both the subject character and #1 must be alive. Effect: #1 is not not dying; the subject character loses one meds.
+
+Organize the output as a json with a list of entries with the keys "subject", "actionId", "parameters",  "action", "intention" and "explanation", where "subject" is the character who's performing the action, "actionId" is the id of the action as it appears in the above list, "parameters" field specifies the values of the parameters of the action as an ordered list, "intention" specifies which character plan it comes from, and "executed" indicates whether the action should be successfully executed. Identiy a character plan by the name of the character and the character goal associated with the plan.
+Note that except action 1 from the above list, every action has an intention with it. The intention means the subject's desired state of the world. All intentional actions must be in algin with the character's intention.
+
+The intention could be one of the following(character #1 could any character in this story):
+1. dead(character #1) 
+2. alive(character #1)
+3. possessed_by(med, character #1)
+
+
+Character Intentions must be established by executed actions in the narrative plan, not introduced externally.
+Output a json only, without any comments.
+

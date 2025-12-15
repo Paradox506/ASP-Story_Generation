@@ -1,7 +1,7 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 import subprocess
 import re
 import shutil
@@ -11,15 +11,12 @@ try:
 except Exception:  # pragma: no cover
     clingo = None
 
-from benchmark.asp.action_utils import ActionMapper, extract_intention
+from benchmark.asp.action_utils import ActionMapper
 from benchmark.io.constraints_collectors import BaseConstraintsCollector, get_collector
 
 
 class ASPValidator:
-    """
-    Minimal clingo-based validator for one-off mode.
-    Converts LLM actions into ASP constraints and inspects clingo JSON output.
-    """
+    """Runs clingo and parses its JSON output."""
 
     def __init__(
         self,
@@ -40,35 +37,10 @@ class ASPValidator:
         self.collector = get_collector(domain, domain_dir, instance_dir, collector)
 
     def get_input_files(self) -> List[str]:
-        """
-        Return the list of LP files that will be fed to clingo for this validator.
-        Useful for persisting alongside run artifacts.
-        """
-        return self.collector.collect()
+        return self.clingo_input_files()
 
-    def _constraints_from_actions(self, actions: List[Dict]) -> str:
-        lines: List[str] = []
-        for t, action in enumerate(actions):
-            subj = action["subject"]
-            aid = action["actionId"]
-            params = action.get("parameters", [])
-            functor = self.mapper.to_asp_functor(aid, params)
-            if self.domain == "aladdin":
-                if aid in (0, 7, 8):
-                    intention = "_"
-                else:
-                    intention = extract_intention(action.get("character_plan", "")) or "_"
-                lines.append(f":- not act({subj}, {functor}, {intention}, {t}).")
-            elif self.domain == "western":
-                lines.append(f":- not act({subj}, {functor}, {t}).")
-                executed_flag = action.get("executed", True)
-                if executed_flag:
-                    lines.append(f":- not executed({subj}, {functor}, {t}).")
-                else:
-                    lines.append(f":- executed({subj}, {functor}, {t}).")
-            else:  # secret_agent
-                lines.append(f":- not act({subj}, {functor}, {t}).")
-        return "\n".join(lines)
+    def clingo_input_files(self) -> List[str]:
+        return self.collector.collect()
 
     def validate_plan(self, actions: List[Dict], maxstep: int = 10, constraints_text: Optional[str] = None, constraints_path: Optional[str] = None) -> Dict:
         """
@@ -87,7 +59,7 @@ class ASPValidator:
         self.last_constraints = asp_constraints
 
         if self.use_clingo_api:
-            return self._validate_with_api(asp_constraints, maxstep)
+            return self.validate_with_api(asp_constraints, maxstep)
 
         # choose constraint file path
         if constraints_path:
@@ -122,12 +94,12 @@ class ASPValidator:
             if data.get("Result") == "SATISFIABLE":
                 result["satisfiable"] = True
                 values = data["Call"][0]["Witnesses"][0]["Value"] if data["Call"] and data["Call"][0]["Witnesses"] else []
-                result.update(self._extract_symbols(values))
+                result.update(self.extract_symbols(values))
         except Exception:
             pass
         return result
 
-    def _validate_with_api(self, asp_constraints: str, maxstep: int) -> Dict:
+    def validate_with_api(self, asp_constraints: str, maxstep: int) -> Dict:
         result: Dict = {
             "used_api": True,
             "satisfiable": False,
@@ -138,7 +110,7 @@ class ASPValidator:
             "acts": [],
         }
         ctrl = clingo.Control(["-c", f"maxstep={maxstep}"])
-        for f in self._collect_files():
+        for f in self.clingo_input_files():
             ctrl.load(f)
         ctrl.add("base", [], asp_constraints)
         ctrl.ground([("base", [])])
@@ -150,12 +122,12 @@ class ASPValidator:
         ctrl.solve(on_model=on_model)
         if models:
             result["satisfiable"] = True
-            result.update(self._extract_symbols(models[0]))
+            result.update(self.extract_symbols(models[0]))
         # store a minimal raw representation for persistence
         self.last_stdout = json.dumps({"models": models, "satisfiable": result["satisfiable"]})
         return result
 
-    def _extract_symbols(self, values: List[str]) -> Dict:
+    def extract_symbols(self, values: List[str]) -> Dict:
         nonexec = []
         unjust = []
         open_frames = []
@@ -163,16 +135,16 @@ class ASPValidator:
         acts = []
         for atom in values:
             if atom.startswith("nonexec_feedback"):
-                parsed = self._parse_nonexec(atom)
+                parsed = self.parse_nonexec(atom)
                 nonexec.append(parsed or atom)
             elif atom.startswith("unjustified"):
-                parsed = self._parse_unjustified(atom)
+                parsed = self.parse_unjustified(atom)
                 unjust.append(parsed or atom)
             elif atom.startswith("open_commitment_frame"):
-                parsed = self._parse_open_frame(atom)
+                parsed = self.parse_open_frame(atom)
                 open_frames.append(parsed or atom)
             elif atom.startswith("conflict"):
-                parsed = self._parse_conflict(atom)
+                parsed = self.parse_conflict(atom)
                 conflicts.append(parsed or atom)
             elif atom.startswith("act("):
                 acts.append(atom)
@@ -184,8 +156,7 @@ class ASPValidator:
             "acts": acts,
         }
 
-    def _parse_nonexec(self, atom: str) -> Dict:
-        # nonexec_feedback("msg", act(subj, action(params), T))
+    def parse_nonexec(self, atom: str) -> Dict:
         m = re.match(r'nonexec_feedback\("(.*)",\s*act\(([^,]+),\s*(.+),\s*(\d+)\)\)', atom)
         if not m:
             return {}
@@ -196,8 +167,7 @@ class ASPValidator:
             "time": int(m.group(4)),
         }
 
-    def _parse_unjustified(self, atom: str) -> Dict:
-        # unjustified(Subj, Fluent, Intention, T)
+    def parse_unjustified(self, atom: str) -> Dict:
         m = re.match(r'unjustified\(([^,]+),\s*([^,]+),\s*([^,]+),\s*(\d+)\)', atom)
         if not m:
             return {}
@@ -208,14 +178,13 @@ class ASPValidator:
             "time": int(m.group(4)),
         }
 
-    def _parse_open_frame(self, atom: str) -> Dict:
+    def parse_open_frame(self, atom: str) -> Dict:
         m = re.match(r'open_commitment_frame\(([^,]+),\s*([^)]+)\)', atom)
         if not m:
             return {}
         return {"subject": m.group(1), "intention": m.group(2)}
 
-    def _parse_conflict(self, atom: str) -> Dict:
-        # conflict(Threatener, ThreatenerIntent, ThreatenedActor, ThreatenedIntent, Action)
+    def parse_conflict(self, atom: str) -> Dict:
         if not atom.startswith("conflict(") or not atom.endswith(")"):
             return {}
         inner = atom[len("conflict(") : -1]

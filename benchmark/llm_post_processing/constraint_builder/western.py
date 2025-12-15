@@ -29,7 +29,7 @@ class WesternConstraintBuilder(ConstraintBuilder):
             if hasattr(action, "get") and "normalized_intention" in action:
                 intention = action.get("normalized_intention") or intention
             if not intention and self.use_default_intention:
-                intention = self._default_intention(aid, params, subj)
+                intention = self.default_intention(aid, params, subj)
             if not intention:
                 intention = "_"
             executed_flag = action.get("executed", True)
@@ -41,7 +41,7 @@ class WesternConstraintBuilder(ConstraintBuilder):
         lines.append(":- not conflict(_,_,_,_,_).")
         return "\n".join(lines)
 
-    def _default_intention(self, aid: int, params: List[str], subj: str) -> str:
+    def default_intention(self, aid: int, params: List[str], subj: str) -> str:
         if aid == 2 and params:  # move(Dest)
             return f"at({subj},{params[0]})"
         if aid == 3 and len(params) >= 2:  # take(Obj, Ch)

@@ -52,6 +52,7 @@ class ArtifactWriter:
             (dest_dir / "evaluation.json").write_text(json.dumps(result["evaluation"], indent=2))
         if raw_clingo is not None:
             (dest_dir / "clingo_raw.json").write_text(raw_clingo)
+            (dest_dir / "clingo_stdout.txt").write_text(raw_clingo)
         if constraints is not None:
             (dest_dir / f"{self.domain}_NarrPlan.lp").write_text(constraints)
         if result.get("stage") == "prompt_only":

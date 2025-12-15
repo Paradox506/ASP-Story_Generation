@@ -88,7 +88,7 @@ nonexec_feedback("Genie is dead", act(Subj, cast_love_spell(Target, Lover), T)) 
 
 justified(Subj, possessed_by(lamp, Subj), I, T1) :- act(Subj, cast_love_spell(Target, Lover), I, T), T1 <= T, step(T1).
 justified(Subj, alive(Subj, t), I, T1) :- act(Subj, cast_love_spell(Target, Lover), I, T), T1 <= T, step(T1).
-justified(Subj, alive(genie, t), I, T1) :- act(Subj, cast_love_spell(Target, Lover), I, T), T1 <= T, step(T1).
+justified(Subj, alive(galileo, t), I, T1) :- act(Subj, cast_love_spell(Target, Lover), I, T), T1 <= T, step(T1).
 justification_needed(Subj, in_love_with(Target, Lover, t), I, T+1) :- act(Subj, cast_love_spell(Target, Lover), I, T).
 
 %% Marry

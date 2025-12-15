@@ -10,28 +10,26 @@ class ActionSchema:
 
 
 class ActionMapper:
-    """
-    Centralized actionId -> ASP functor mapping for all domains.
-    """
+    """ActionId -> ASP functor mapping per domain."""
 
     def __init__(self, domain: str):
         self.domain = domain
-        self._schemas: Dict[int, ActionSchema] = self._build_schema(domain)
+        self.schemas_by_id: Dict[int, ActionSchema] = self.build_schema(domain)
 
     @property
     def schemas(self) -> Dict[int, ActionSchema]:
-        return self._schemas
+        return self.schemas_by_id
 
     def has_action(self, action_id: int) -> bool:
-        return action_id in self._schemas
+        return action_id in self.schemas_by_id
 
-    def _build_schema(self, domain: str) -> Dict[int, ActionSchema]:
+    def build_schema(self, domain: str) -> Dict[int, ActionSchema]:
         if domain == "secret_agent":
             return {
                 1: ActionSchema("move", 1),
                 2: ActionSchema("move_through_guards", 2),
-                3: ActionSchema("kill", 2),
-                4: ActionSchema("pickup", 1),
+                3: ActionSchema("pickup", 1),
+                4: ActionSchema("kill", 2),
             }
         if domain == "aladdin":
             return {
@@ -51,15 +49,15 @@ class ActionMapper:
             return {
                 1: ActionSchema("snakebite", 0),
                 2: ActionSchema("move", 1),
-                3: ActionSchema("take", 2),
-                4: ActionSchema("heal", 2),
-                5: ActionSchema("heal", 2),  # western prompt defines action 5 as heal
+                3: ActionSchema("take", 2),  # take(meds, carl)
+                4: ActionSchema("take", 2),  # take(meds, other_character)
+                5: ActionSchema("heal", 2),  # heal(target, meds)
                 6: ActionSchema("do_nothing", 0),  # spontaneous, skipped in constraints
             }
         raise ValueError(f"Unsupported domain {domain}")
 
     def schema(self, action_id: int) -> ActionSchema:
-        return self._schemas[action_id]
+        return self.schemas_by_id[action_id]
 
     def to_asp_functor(self, action_id: int, params: List[str]) -> str:
         schema = self.schema(action_id)
@@ -84,10 +82,7 @@ INTENTION_PATTERNS: List[Tuple[str, str]] = [
 
 
 def extract_intention(character_plan: str) -> Optional[str]:
-    """
-    Pull the first intention-like predicate from a character_plan string.
-    Accepts loose formats and returns a normalized ASP term or None.
-    """
+    """Extract first intention-like predicate from a character plan string."""
     if not character_plan:
         return None
     lowered = character_plan.lower()

@@ -12,7 +12,7 @@ class AladdinConstraintBuilder(ConstraintBuilder):
         self.unintentional_ids = {0, 7, 8}
         self.use_default_intention = use_default_intention
 
-    def _default_intention(self, aid: int, params: List[str], subj: str) -> str:
+    def default_intention(self, aid: int, params: List[str], subj: str) -> str:
         """
         Provide a valid intention/1 term when the character_plan does not give one.
         These are heuristic fallbacks aligned with declared intentions in domain.lp:
@@ -53,7 +53,7 @@ class AladdinConstraintBuilder(ConstraintBuilder):
 
             intention = extract_intention(action.get("character_plan", ""))
             if not intention and self.use_default_intention:
-                intention = self._default_intention(aid, params, subj)
+                intention = self.default_intention(aid, params, subj)
             if not intention:
                 raise ValueError(f"Missing intention for actionId={aid} at step {i}")
             lines.append(f"act({subj}, {functor}, {intention}, {i}).")

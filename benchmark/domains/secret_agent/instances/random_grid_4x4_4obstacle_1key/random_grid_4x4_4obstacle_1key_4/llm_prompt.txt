@@ -1,0 +1,109 @@
+# Secret Agent Mission Briefing
+
+## Mission Overview
+You are a secret agent operating in a 4x4 grid-based facility. Your mission is to infiltrate the facility, gather intelligence documents, obtain the gun, and kill the mastermind.
+
+## Initial State
+
+- **Your starting location**: l0_0
+- **Mastermind's location**: l3_3
+- **Gun location**: l2_0
+- **Document fragments**: 1 fragment(s) to collect
+  - dox0 is at l0_2
+
+## Movement Rules
+
+You can move between 24 pairs of adjacent locations:
+
+- You can move from l0_0 to l1_0
+- You can move from l0_2 to l1_2
+- You can move from l0_2 to l0_3
+- You can move from l0_3 to l1_3
+- You can move from l0_3 to l0_2
+- You can move from l1_0 to l0_0
+- You can move from l1_0 to l2_0
+- You can move from l1_0 to l1_1
+- You can move from l1_1 to l1_0
+- You can move from l1_1 to l1_2
+- You can move from l1_2 to l0_2
+- You can move from l1_2 to l1_1
+- You can move from l1_2 to l1_3
+- You can move from l1_3 to l0_3
+- You can move from l1_3 to l2_3
+- You can move from l1_3 to l1_2
+- You can move from l2_0 to l1_0
+- You can move from l2_0 to l3_0
+- You can move from l2_3 to l1_3
+- You can move from l2_3 to l3_3
+- You can move from l3_0 to l2_0
+- You can move from l3_2 to l3_3
+- You can move from l3_3 to l2_3
+- You can move from l3_3 to l3_2
+
+## Available Actions
+
+You can perform the following actions. Each action has specific requirements:
+
+### 1. move(location)
+- **Description**: Move to an adjacent location
+- **Parameter**: `location` - the target location to move to
+- **Requirements**: 
+  - The target location must be directly connected to your current location
+  - The connection must exist in the Movement Rules above
+- **Example**: `move(l0_1)` - move to location l0_1
+
+### 2. move_through_guards(location, dox)
+- **Description**: Move through guarded entrance by presenting assembled dox
+- **Parameters**: 
+  - `location` - the target location (must be a guarded location)
+  - `dox` - the assembled document to present to guards
+- **Requirements**: 
+  - You must have the assembled dox (all fragments collected)
+  - The target location must be accessible through a guarded connection
+- **Example**: `move_through_guards(l9_9, dox)` - move to the mastermind's location by presenting dox
+
+### 3. pickup(item)
+- **Description**: Pick up an item at your current location
+- **Parameter**: `item` - the item to pick up (gun or dox fragment)
+- **Requirements**: 
+  - The item must be at your current location
+  - Valid items: gun, dox0, dox1, etc.
+- **Example**: `pickup(gun)` - pick up the gun
+- **Example**: `pickup(dox0)` - pick up document fragment dox0
+
+### 4. kill(character, weapon)
+- **Description**: Kill a character using a weapon
+- **Parameters**: 
+  - `character` - the character to kill (only mastermind)
+  - `weapon` - the weapon to use (must be gun)
+- **Requirements**: 
+  - You must have the weapon in your possession
+  - You must be at the same location as the target character
+  - Valid target: mastermind
+  - Valid weapon: gun
+- **Example**: `kill(mastermind, gun)` - kill the mastermind with the gun
+
+## Guarded Entrances
+
+The following locations require assembled dox to access (use move_through_guards action):
+
+- From l2_3 to l3_3
+- From l3_2 to l3_3
+
+## Document Assembly
+
+You need to collect dox0 to have the complete dox.
+
+## Output Format
+
+Please provide a sequence of actions to complete the mission. Output each action on a separate line in the following format:
+
+```
+move(l0_1)
+move(l0_2)
+pickup(dox0)
+move(l5_8)
+pickup(gun)
+move_through_guards(l9_9, dox)
+kill(mastermind, gun)
+```

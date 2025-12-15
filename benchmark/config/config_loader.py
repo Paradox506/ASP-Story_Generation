@@ -35,7 +35,7 @@ def load_combined_config(default_path: Path, user_path: Optional[Path]) -> Dict:
         cfg = yaml.safe_load(default_path.read_text()) or {}
     if user_path and user_path.exists():
         user_cfg = yaml.safe_load(user_path.read_text()) or {}
-        cfg = _deep_merge(cfg, user_cfg)
+        cfg = deep_merge(cfg, user_cfg)
     return cfg
 
 
@@ -65,11 +65,11 @@ def to_experiment_config(cfg: Dict) -> (ExperimentConfig, LlmConfig):
     return exp_cfg, llm
 
 
-def _deep_merge(base: Dict, override: Dict) -> Dict:
+def deep_merge(base: Dict, override: Dict) -> Dict:
     merged = dict(base)
     for k, v in override.items():
         if k in merged and isinstance(merged[k], dict) and isinstance(v, dict):
-            merged[k] = _deep_merge(merged[k], v)
+            merged[k] = deep_merge(merged[k], v)
         else:
             merged[k] = v
     return merged

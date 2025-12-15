@@ -1,0 +1,27 @@
+- You can move from location l0_0 to location l1_0.
+- You can move from location l0_2 to location l1_2.
+- You can move from location l0_2 to location l0_3.
+- You can move from location l0_3 to location l0_2.
+- You can move from location l1_0 to location l0_0.
+- You can move from location l1_0 to location l2_0.
+- You can move from location l1_2 to location l0_2.
+- You can move from location l1_2 to location l2_2.
+- You can move from location l2_0 to location l1_0.
+- You can move from location l2_0 to location l3_0.
+- You can move from location l2_0 to location l2_1.
+- You can move from location l2_1 to location l2_0.
+- You can move from location l2_1 to location l3_1.
+- You can move from location l2_1 to location l2_2.
+- You can move from location l2_2 to location l1_2.
+- You can move from location l2_2 to location l2_1.
+- You can move from location l2_2 to location l2_3.
+- You can move from location l2_3 to location l2_2.
+- You can move from location l2_3 to location l3_3.
+- You can move from location l3_0 to location l2_0.
+- You can move from location l3_0 to location l3_1.
+- You can move from location l3_1 to location l2_1.
+- You can move from location l3_1 to location l3_0.
+- You can move from location l3_3 to location l2_3.
+- You can only move from location l2_3 to location l3_3 through guards by presenting dox.
+- You can only move from location l3_2 to location l3_3 through guards by presenting dox.
+- You need to collect all of dox0 to assemble dox.

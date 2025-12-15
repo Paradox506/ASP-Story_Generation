@@ -75,9 +75,6 @@ class WesternPlanParser(BasePlanParser):
             return ""
         intent = intention.strip().lower()
         # allow formats like "alive(agent_0)" / "dead(agent_1)" / "possessed_by(meds,agent_1)"
-        def _wrap(name: str) -> str:
-            return name.strip()
-
         # direct passthrough if already valid
         if intent.startswith("alive(") or intent.startswith("dead(") or intent.startswith("possessed_by("):
             return intent

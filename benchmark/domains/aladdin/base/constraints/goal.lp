@@ -1,1 +1,2 @@
-:- not fl(married_with(mamoud, jasmine, t), maxstep).
+:- not fl(married_with(kamy, polly, t), maxstep).
+:- not fl(alive(galileo, f), maxstep).

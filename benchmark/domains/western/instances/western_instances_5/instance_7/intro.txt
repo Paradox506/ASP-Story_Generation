@@ -1,0 +1,5 @@
+
+    We have 6 characters: agent_0,agent_1,agent_2,agent_3,agent_4 and general store owner carl.
+    carl is a merchant.  meds belong to carl. meds are medicines that can heal snakebite.  Carl has all the 4 meds. Nobody else has any meds.
+    Here's the current state: all the characters are alive. None of them are dying. agent_0 is at l0_4. agent_1 is at l2_0. agent_2 is at l2_1. agent_3 is at l1_2. agent_4 is at l1_3.  carl is at gen_store. No character has any intention.
+    
