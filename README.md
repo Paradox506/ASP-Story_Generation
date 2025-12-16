@@ -57,6 +57,23 @@ python benchmark/cli/run_benchmark.py \
   --model anthropic/claude-3.7-sonnet
 ```
 
+### Generate Prompt without making LLM calls
+```bash
+python benchmark/cli/run_benchmark.py \
+  --config config.default.yaml \
+  --domain secret_agent \
+  --instance benchmark/domains/secret_agent/instances/random_grid_16x16_64obstacle_1key/random_grid_16x16_64obstacle_1key_0 \
+  --prompt-only
+```
+
+### Run verifier using an previous LLM response 
+```bash
+python benchmark/cli/run_benchmark.py \
+  --config config.default.yaml \
+  --domain secret_agent \
+  --response-file <path-to-llm_raw.txt>
+```
+
 
 ## ASP Story Generation Evaluation Pipeline
 
@@ -142,7 +159,7 @@ The main pipeline is:
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                           EVALUATION LAYER                                │
 │ benchmark/evaluators/*                                                    │
-│  - Base metrics + domain-specific metrics                                 │
+│  - Base metrics + domain-specific metrics  #TODO more analysis            │
 │  - Consumes ASP outputs + parse outputs                                   │
 └───────────────┬───────────────────────────────────────────────────────────┘
                 v
@@ -161,59 +178,14 @@ The main pipeline is:
 └───────────────────────────────────────────────────────────────────────────┘
 ```
 
-```mermaid
-flowchart TD
-  %% Entry
-  CLI[CLI\nbenchmark/cli/run_benchmark.py\n(root shim: run_benchmark.py)] --> ARGS[Arg Parsing\nbenchmark/cli/args.py]
-  ARGS --> CFGLOAD[Config Load + Merge\nbenchmark/config/config_loader.py\nload_combined_config + deep_merge\n-> ExperimentConfig + LlmConfig]
-  CFGLOAD --> KEY[API Key Resolution\nbenchmark/config/config_utils.py\nload_api_key(provider)]
-
-  %% Domain + instance selection
-  CFGLOAD --> REG[Domain Registry\nbenchmark/domain_registry.py\nget_adapter(domain)]
-  ARGS --> SEL[Instance Selection\nCLI --instance/--instances\nor experiment.instances\nor response-file inference\nor default_instance_dirs()]
-
-  %% Runner
-  REG --> RUN[ExperimentRunner\nbenchmark/runner/experiment_runner.py]
-  SEL --> RUN
-  KEY --> RUN
-
-  %% Prompt
-  RUN --> PBGET[get_prompt_builder(domain, asp_version)\nbenchmark/prompt_builders/*]
-  PBGET --> PROMPT[PromptBuilder.build_prompt(domains_root, instance_dir)]
-
-  %% Modes
-  PROMPT --> MODE{Mode}
-  MODE -->|Online| LLMREQ[LLM Request\nbenchmark/llm_clients/*\nOpenAI / OpenRouter / Anthropic]
-  MODE -->|Response-file| RAW[Load llm_raw.txt\n(no API call)]
-  MODE -->|Prompt-only| ARTPO[Persist prompt-only marker\n+ copy support files]
-
-  LLMREQ --> RAWTEXT[LLM Raw Text]
-  RAW --> RAWTEXT
-
-  %% Parsing + constraints
-  RAWTEXT --> PPGET[get_plan_parser(domain, domain_dir, instance_dir)\nbenchmark/llm_post_processing/plan_parser/*]
-  PPGET --> PARSE[PlanParser.parse(raw)\n-> normalized actions\n+ valid sets]
-  PARSE --> BUILD[PlanParser.build_constraints(actions, maxstep)\n-> <domain>_NarrPlan.lp\n(uses constraint_builder/* as needed)]
-
-  %% ASP validation
-  BUILD --> VALID[ASPValidator\nbenchmark/asp/validator.py\nvalidate_plan(...)]
-  VALID --> COLLECT[Collect clingo inputs\n- domain_constraints/*.lp\n- instance_constraints/*.lp (+ *IHOP*.lp)\n- generated plan lp]
-  COLLECT --> CLINGO[Run clingo (JSON mode)\nparse SAT/UNSAT, witnesses,\nnonexec/conflict atoms]
-
-  %% Evaluation
-  CLINGO --> EVALGET[Evaluator Factory\nfrom Domain Registry\nbenchmark/evaluators/*]
-  EVALGET --> EVAL[Evaluator.evaluate(asp_result, parse_result, ...)\n-> evaluation.json]
-
-  %% Artifacts
-  PARSE --> WRITE[ArtifactWriter\nbenchmark/io/artifact_writer.py\nwrite result.json/prompt.txt/parse.json/...]
-  CLINGO --> WRITE
-  EVAL --> WRITE
-  BUILD --> WRITE
-
-  %% Support files / manifests
-  VALID --> COPY[SupportFilesCopier\nbenchmark/io/support_files_copier.py]
-  COPY --> OUT[Results Bundle\nresults/<run_id>/run_<seq>/...]
-  COPY --> MANIFEST[collect.json\n(src->dest manifest)]
+```text
+┌─────────────────┬───────────────┬───────────────────────┬───────────────────┐
+│ Mode            │ LLM Call      │ Parse/Build           │ Clingo Validation │
+├─────────────────┼───────────────┼───────────────────────┼───────────────────┤
+│ Online          │ Yes           │ Yes                   │ Yes               │
+│ Prompt-only     │ No            │ No                    │ No                │
+│ Response-file   │ No            │ Yes                   │ Yes               │
+└─────────────────┴───────────────┴───────────────────────┴───────────────────┘
 ```
 
 
