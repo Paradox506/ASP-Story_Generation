@@ -1,3 +1,17 @@
+# TLDR
+
+```bash
+git clone
+cd
+uv sync
+export OPENAI_API_KEY="..."
+python benchmark/cli/run_benchmark.py \
+  --config config.default.yaml \
+  --domain secret_agent \
+  --model o1
+```
+Runs the first instance under path `benchmark/domains/secret_agent/instances`
+
 # ASP Story Generation Benchmark
 
 This repository contains ASP encodings and prompts for three narrative planning domains (Secret Agent, Aladdin, Western), plus a Python benchmark runner.
@@ -10,7 +24,7 @@ The main pipeline is:
 4. Build a narrative plan ASP file (`<domain>_NarrPlan.lp`) from actions.
 5. Validate with `clingo` using:
    - domain constraints (`benchmark/domains/<domain>/<asp_version>/constraints/*.lp`)
-   - instance constraints (`benchmark/domains/<domain>/instances/**/instance.lp` + any `*IHOP*.lp`)
+   - instance constraints (`benchmark/domains/<domain>/instances/**/instance.lp`)
    - generated narrative plan (`<domain>_NarrPlan.lp`)
 6. Persist all artifacts under `results/`.
 
@@ -95,8 +109,8 @@ Notes:
 
 `experiment`:
 - `domain`: `western` | `secret_agent` | `aladdin`
-- `asp_version`: `base` | `original`
-- `models`: list of model names (e.g. `["openai/o1"]`)
+- `asp_version`: `base` | `original` 
+- `models`: llm model tag (dependes on provider e.g. `openai/chatgpt-4o-latest` for openrouter `chatgpt-4o-latest` for openai)
 - `runs_per_instance`: repeat each instance N times
 - `workers`: thread pool size for running multiple runs
 - `output_dir`: where to write results (default `results`)
@@ -120,10 +134,9 @@ Top-level:
 `experiment`:
 - `domain` (string): `western` | `secret_agent` | `aladdin`
 - `asp_version` (string): `base` | `original`
-- `mode` (string): currently informational (default `one-off`)
 - `models` (list[string]): list of model identifiers (used when `--model` is not provided)
 - `runs_per_instance` (int): number of runs per instance (ignored in response-file mode)
-- `instances` (list[string]): instance directories (optional); each entry may be:
+- `instances` (list[string]): specific variation instance directories; each entry may be:
   - absolute path, or
   - path relative to repo root, or
   - path relative to `<domains_root>/<domain>/instances/` (e.g. `random_grid_10x10_25obstacle_1key/random_grid_10x10_25obstacle_1key_0`)
@@ -161,14 +174,6 @@ The runner supports three modes:
 - Prompt-only mode: generates and saves the prompt without calling an LLM or clingo.
 - Response-file mode: replays a previously saved LLM response (`llm_raw.txt`) without calling an LLM, then parses and validates with clingo.
 
-The recommended entrypoint is:
-
-```bash
-python benchmark/cli/run_benchmark.py --config config.default.yaml --domain secret_agent
-```
-
-`run_benchmark.py` at repo root is a compatibility shim and should behave the same.
-
 ### Prompt-only mode (no LLM, no clingo)
 
 ```bash
@@ -193,7 +198,7 @@ python benchmark/cli/run_benchmark.py \
   --output-dir results
 ```
 
-### Response-file mode (offline replay)
+### Response-file mode (offline replay based on a previous llm ouput)
 
 Use a pre-saved `llm_raw.txt` from a previous run:
 
@@ -238,7 +243,7 @@ Relative values are interpreted as:
 
 ## Output Artifacts
 
-Artifacts are written under a deterministic directory structure so you can diff runs and replay response files.
+Artifacts are written under a directory structure so you can diff runs and replay response files.
 
 ### Directory structure
 
@@ -251,8 +256,8 @@ results/<run_id>/run_<seq>/<domain>/<asp_version>/<model>/<instance_label>/
 Where:
 
 - `<run_id>` is a timestamp like `2025-12-08_22-53-30_PST`.
-  - response-file runs append `_response_file`
-  - prompt-only runs append `_prompt_only`
+  - response-file mode runs append `_response_file`
+  - prompt-only mode runs append `_prompt_only`
 - `<seq>` is zero-padded (e.g. `0000`, `0001`) for multiple runs.
 - `<domain>` is `secret_agent` (in examples below).
 - `<asp_version>` is `base` or `original`.
@@ -278,7 +283,7 @@ Common files:
 - `parse.json`: parsed actions + valid sets (even on parse failure)
 - `asp.json`: structured ASP validation output (if validation ran)
 - `clingo_stdout.txt` / `clingo_raw.json`: raw clingo output
-- `secret_agent_NarrPlan.lp`: generated narrative plan constraints
+- `<domain>_NarrPlan.lp`: generated narrative plan constraints
 - `domain_constraints/`: copied domain LP inputs used for clingo
 - `instance_constraints/`: copied instance LP inputs used for clingo
 - `collect.json`: a manifest of copied support files and their source paths
