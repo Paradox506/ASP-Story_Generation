@@ -4,6 +4,8 @@ Only the person who possess the lamp can summon galileo and cast love spells.
 Two people must be in love with each other to get married. 
 Only the knight can kill the monsters. 
 Two characters must be in the same location to have any interactions.
+The dragon david and the lamp spirit galileo are at the loction mountain.
+All the other characters are at the location castle.
 
 Given the narrative goal "the lamp spirit galileo is dead, and kamy and polly get married", generate a narrative plan where each action in the plan takes one of the forms in the following list (where #1, #2 and #3 are parameters of the action):
 
@@ -21,5 +23,11 @@ Only the knight alice can move out of the castle.
 10. a subject character asks another character #1 to obtain #2 - #1 is a character and #2 is an object; #1 must be loyal to the subject character; this action requires the subject character to have a motivation to obtain #2; this action makes #1 to have motivation to give #2 to the subject character.
 
 Organize the output as a json with a list of entries with the keys "subject", "actionId", "parameters",  "action", "character_plan" and "explanation", where "subject" is the character who's performing the action, "actionId" is the id of the action as it appears in the above list, "parameters" field specifies the values of the parameters of the action as an ordered list, and "character_plan" specifies which character plan it comes from. Identiy a character plan by the name of the character and the character goal associated with the plan.
+
+"character_plan" can only be one of the following:
+1. dead(<someone>)
+2. marry(<someone>)
+3. possessed_by(lamp, <someone>)
+
 Note that except action 0, 7 and 8 from the above list, every action has to be in a character plan. Character goals must be established by executed actions in the narrative plan, not introduced externally. 
 Output a json only, without any comments.

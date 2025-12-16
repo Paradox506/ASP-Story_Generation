@@ -1,12 +1,10 @@
 experiment:
-  domain: secret_agent
   asp_version: base
   mode: one-off
   runs_per_instance: 1
   instances: []
   maxstep: null
   output_dir: results
-  workers: 1
 
 domains_root: benchmark/domains
 

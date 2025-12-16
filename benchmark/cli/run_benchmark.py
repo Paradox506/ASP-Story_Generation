@@ -180,25 +180,94 @@ def main(argv=None):
         result = runner.run(response_text=response_text if args.response_file else None, run_seq=seq)
         result["invocation"] = cmd_meta
         return result
-
+    
+    total_tasks = len(tasks)
     if workers and workers > 1:
         with ThreadPoolExecutor(max_workers=workers) as executor:
-            future_map = {
-                executor.submit(run_task, seq, m, inst): (m, inst) for seq, m, inst in tasks
-            }
+            future_map = {}
+            for i, (seq, m, inst) in enumerate(tasks, start=1):
+                print(f"[{i}/{total_tasks}] START domain={domain} model={m} instance={inst}")
+                future = executor.submit(run_task, seq, m, inst)
+                future_map[future] = (i, m, inst)
+
             for future in as_completed(future_map):
-                results.append(future.result())
+                i, m, inst = future_map[future]
+                result = future.result()
+                meta = result.get("metadata") or {}
+                asp = result.get("asp") or {}
+                satisfiable = asp.get("satisfiable")
+                if satisfiable is True:
+                    clingo_result = "SATISFIABLE"
+                elif satisfiable is False:
+                    clingo_result = "UNSATISFIABLE"
+                else:
+                    clingo_result = "N/A"
+
+                out_path = (
+                    f"{output_dir}/"
+                    f"{result.get('run_id')}/"
+                    f"{meta.get('domain')}/"
+                    f"{meta.get('asp_version')}/"
+                    f"{str(meta.get('model','')).replace('/','_')}/"
+                    f"{meta.get('instance')}"
+                )
+
+                print(
+                    f"[{i}/{total_tasks}] DONE  "
+                    f"Plan:{clingo_result} "
+                    f"domain={meta.get('domain')} "
+                    f"model={meta.get('model')} "
+                    f"instance={meta.get('instance')} "
+                    f"stage={result.get('stage')} "
+                    f"out={out_path}",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                results.append(result)
+
     else:
-        for seq, m, inst in tasks:
-            results.append(run_task(seq, m, inst))
+        for i, (seq, m, inst) in enumerate(tasks, start=1):
+            print(f"[{i}/{total_tasks}] START domain={domain} model={m} instance={inst}")
+            result = run_task(seq, m, inst)
+            meta = result.get("metadata") or {}
+            asp = result.get("asp") or {}
+            satisfiable = asp.get("satisfiable")
+            if satisfiable is True:
+                clingo_result = "SATISFIABLE"
+            elif satisfiable is False:
+                clingo_result = "UNSATISFIABLE"
+            else:
+                clingo_result = "N/A"
+
+            out_path = (
+                f"{output_dir}/"
+                f"{result.get('run_id')}/"
+                f"{meta.get('domain')}/"
+                f"{meta.get('asp_version')}/"
+                f"{str(meta.get('model','')).replace('/','_')}/"
+                f"{meta.get('instance')}"
+            )
+
+            print(
+                f"[{i}/{total_tasks}] DONE  "
+                f"Plan: {clingo_result} "
+                f"domain={meta.get('domain')} "
+                f"model={meta.get('model')} "
+                f"instance={meta.get('instance')} "
+                f"stage={result.get('stage')} "
+                f"out={out_path}",
+                file=sys.stderr,
+                flush=True,
+            )
+            results.append(result)
 
     summary = summarize_results(results)
     output_data = {"summary": summary, "runs": results, "invocation": cmd_meta}
 
     if args.output:
         Path(args.output).write_text(json.dumps(output_data, indent=2))
-    else:
-        print(json.dumps(output_data, indent=2))
+    # else:
+    #     print(json.dumps(output_data, indent=2))
 
 
 if __name__ == "__main__":

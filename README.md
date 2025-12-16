@@ -1,16 +1,59 @@
 # TLDR
 
+### Enviroment Set Up
 ```bash
 git clone https://github.com/Paradox506/ASP-Story_Generation.git
 cd ./ASP-Story_Generation
 uv sync
 export OPENAI_API_KEY="<Your OpenAI API Key>"
+```
+### Run the first instance of secret agent story domain using ChatGPT 4o
+```bash
 python benchmark/cli/run_benchmark.py \
   --config config.default.yaml \
   --domain secret_agent \
-  --model o1
+  --model  chatgpt-4o-latest
 ```
-Runs the first instance under path `benchmark/domains/secret_agent/instances`
+
+### Run the first instance of aladdin story domain using ChatGPT o1
+#### Note: it might take several minutes for o1 to respond
+```bash
+python benchmark/cli/run_benchmark.py \
+  --config config.default.yaml \
+  --domain aladdin \
+  --model  o1
+```
+
+### Run the first instance of western story domain using ChatGPT o1
+#### Note: it might take several minutes for o1 to respond
+```bash
+python benchmark/cli/run_benchmark.py \
+  --config config.default.yaml \
+  --domain western \
+  --model  o1
+```
+
+### Run specific instance using specific model using Openrouter API
+
+```bash
+export OPENROUTER_API_KEY="<Your Openrouter API Key>"
+python benchmark/cli/run_benchmark.py \
+  --config config.default.yaml \
+  --domain <domain> \
+  --instance <instance-path> \  
+  --provider openrouter \
+  --model  <model-id-defined-by-openrouter>
+```
+#### For example
+Run secret agent on 16 x 16 map with 64 obstacles using Claude 3.7 Sonnet
+```bash
+python benchmark/cli/run_benchmark.py \
+  --config config.default.yaml \
+  --domain secret_agent \
+  --instance benchmark/domains/secret_agent/instances/random_grid_16x16_64obstacle_1key/random_grid_16x16_64obstacle_1key_0 \
+  --provider openrouter \
+  --model anthropic/claude-3.7-sonnet
+```
 
 # ASP Story Generation Benchmark
 
