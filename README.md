@@ -61,16 +61,14 @@ python benchmark/cli/run_benchmark.py \
 ```bash
 python benchmark/cli/run_benchmark.py \
   --config config.default.yaml \
-  --domain secret_agent \
-  --instance benchmark/domains/secret_agent/instances/random_grid_16x16_64obstacle_1key/random_grid_16x16_64obstacle_1key_0 \
+  --domain <domain> \
+  --instance <instance-path>  \
   --prompt-only
 ```
 
 ### Run verifier using an previous LLM response 
 ```bash
 python benchmark/cli/run_benchmark.py \
-  --config config.default.yaml \
-  --domain secret_agent \
   --response-file <path-to-llm_raw.txt>
 ```
 
