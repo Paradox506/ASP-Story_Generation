@@ -1,10 +1,10 @@
 # TLDR
 
 ```bash
-git clone
-cd
+git clone https://github.com/Paradox506/ASP-Story_Generation.git
+cd ./ASP-Story_Generation
 uv sync
-export OPENAI_API_KEY="..."
+export OPENAI_API_KEY="<Your OpenAI API Key>"
 python benchmark/cli/run_benchmark.py \
   --config config.default.yaml \
   --domain secret_agent \
