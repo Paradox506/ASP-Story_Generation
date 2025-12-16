@@ -1,4 +1,6 @@
-# TLDR
+# ASP Story Generation Evaluation Pipeline
+
+## TLDR
 
 ### Enviroment Set Up
 ```bash
@@ -55,7 +57,8 @@ python benchmark/cli/run_benchmark.py \
   --model anthropic/claude-3.7-sonnet
 ```
 
-# ASP Story Generation Benchmark
+
+## ASP Story Generation Evaluation Pipeline
 
 This repository contains ASP encodings and prompts for three narrative planning domains (Secret Agent, Aladdin, Western), plus a Python benchmark runner.
 
@@ -70,6 +73,106 @@ The main pipeline is:
    - instance constraints (`benchmark/domains/<domain>/instances/**/instance.lp`)
    - generated narrative plan (`<domain>_NarrPlan.lp`)
 6. Persist all artifacts under `results/`.
+┌───────────────────────────────────────────────────────────────────────────┐
+│                           CLI ENTRYPOINT                                  │
+│  python benchmark/cli/run_benchmark.py                                     │
+│  (root shim: run_benchmark.py -> benchmark/cli/run_benchmark.py)          │
+└───────────────┬───────────────────────────────────────────────────────────┘
+                │ parses args + loads config (default + override)
+                v
+┌───────────────────────────────────────────────────────────────────────────┐
+│                         CONFIG LAYER                                       │
+│  benchmark/config/config_loader.py                                         │
+│   - load_combined_config(config.default.yaml, user_config)                │
+│   - deep_merge                                                            │
+│   - to_experiment_config -> ExperimentConfig + LlmConfig                  │
+│                                                                           │
+│  benchmark/config/config_utils.py                                          │
+│   - load_api_key(provider): env var or YAML provider.api_key              │
+└───────────────┬───────────────────────────────────────────────────────────┘
+                │ resolves: domains_root, instance selection, model/provider
+                v
+┌───────────────────────────────────────────────────────────────────────────┐
+│                      DOMAIN REGISTRY / ADAPTERS                            │
+│  benchmark/domain_registry.py                                              │
+│   - get_adapter(domain)                                                   │
+│   - default_instance_dirs(domains_root) -> first instance found            │
+│   - evaluator_factory() -> domain evaluator                               │
+└───────────────┬───────────────────────────────────────────────────────────┘
+                │ constructs one ExperimentRunner per (model, instance, run)
+                v
+┌───────────────────────────────────────────────────────────────────────────┐
+│                         EXPERIMENT RUNNER                                  │
+│  benchmark/runner/experiment_runner.py                                     │
+│  For each run:                                                            │
+│   1) prompt = PromptBuilder.build_prompt(domains_root, instance_dir)      │
+│   2) LLM: online call OR offline response-file OR prompt-only             │
+│   3) parse = PlanParser.parse(llm_raw)                                     │
+│   4) constraints_text = PlanParser.build_constraints(parse.actions)       │
+│   5) asp = ASPValidator.validate_plan(..., constraints_text)              │
+│   6) evaluation = Evaluator.evaluate(asp, parse, ...)                     │
+│   7) persist artifacts + copy support files                               │
+└───────────────┬───────────────────────────────────────────────────────────┘
+                │
+                ├───────────────┐
+                │               │
+                v               v
+┌───────────────────────┐   ┌───────────────────────────────────────────────┐
+│   PROMPT BUILDERS      │   │                  LLM CLIENTS                  │
+│ benchmark/prompt_builders │ │ benchmark/llm_clients/                        │
+│  - get_prompt_builder   │  │  - OpenAIClient / OpenRouterClient / Anthropic│
+│  - Domain + asp_version │  │  - generate(prompt)                            │
+└───────────────┬────────┘   └───────────────────────────────────────────────┘
+                │
+                v
+┌───────────────────────────────────────────────────────────────────────────┐
+│                 PLAN PARSERS / CONSTRAINT BUILDING                         │
+│ benchmark/llm_post_processing/plan_parser/                                 │
+│  - get_plan_parser(domain, domain_dir, instance_dir)                       │
+│  - <DomainPlanParser>.parse(raw_text) -> normalized actions                 │
+│  - <DomainPlanParser>.build_constraints(actions, maxstep) -> <domain>.lp   │
+│                                                                           │
+│ (Internally may use benchmark/llm_post_processing/constraint_builder/*)    │
+└───────────────┬───────────────────────────────────────────────────────────┘
+                v
+┌───────────────────────────────────────────────────────────────────────────┐
+│                        ASP VALIDATION (CLINGO)                             │
+│ benchmark/asp/validator.py                                                 │
+│  - Collect clingo input files:                                             │
+│     domain_constraints/*.lp + instance_constraints/*.lp + plan.lp          │
+│  - Run clingo (JSON output)                                                │
+│  - Parse satisfiable / witnesses / conflicts / nonexec                      │
+└───────────────┬───────────────────────────────────────────────────────────┘
+                v
+┌───────────────────────────────────────────────────────────────────────────┐
+│                           EVALUATION LAYER                                 │
+│ benchmark/evaluators/*                                                     │
+│  - Base metrics + domain-specific metrics                                  │
+│  - Consumes ASP outputs + parse outputs                                    │
+└───────────────┬───────────────────────────────────────────────────────────┘
+                v
+┌───────────────────────────────────────────────────────────────────────────┐
+│                           OUTPUT / ARTIFACTS                               │
+│ benchmark/io/artifact_writer.py                                            │
+│  - Writes result.json, prompt.txt, llm_raw.txt, parse.json, asp.json       │
+│  - Writes clingo_stdout.txt / clingo_raw.json                              │
+│  - Writes <domain>_NarrPlan.lp                                             │
+│                                                                           │
+│ benchmark/io/support_files_copier.py                                       │
+│  - Copies clingo input LPs into output:                                    │
+│     domain_constraints/ and instance_constraints/                          │
+│  - Copies response-file sibling txt files                                  │
+│  - Writes collect.json manifest (src -> dest mapping)                      │
+└───────────────────────────────────────────────────────────────────────────┘
+2) Modes (behavior matrix)
+
+┌─────────────────┬───────────────┬───────────────┬─────────────────────────┐
+│ Mode            │ LLM Call       │ Parse/Build   │ Clingo Validation       │
+├─────────────────┼───────────────┼───────────────┼─────────────────────────┤
+│ Online          │ Yes            │ Yes           │ Yes                     │
+│ Prompt-only     │ No             │ No (prompt only)│ No                    │
+│ Response-file   │ No (replay)    │ Yes           │ Yes                     │
+└─────────────────┴───────────────┴───────────────┴─────────────────────────┘
 
 ## Requirements
 
