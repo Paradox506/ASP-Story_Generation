@@ -73,106 +73,149 @@ The main pipeline is:
    - instance constraints (`benchmark/domains/<domain>/instances/**/instance.lp`)
    - generated narrative plan (`<domain>_NarrPlan.lp`)
 6. Persist all artifacts under `results/`.
+
+## Architecture
+
+```text
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                           CLI ENTRYPOINT                                  │
-│  python benchmark/cli/run_benchmark.py                                     │
+│  python benchmark/cli/run_benchmark.py                                    │
 │  (root shim: run_benchmark.py -> benchmark/cli/run_benchmark.py)          │
 └───────────────┬───────────────────────────────────────────────────────────┘
                 │ parses args + loads config (default + override)
                 v
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                         CONFIG LAYER                                       │
-│  benchmark/config/config_loader.py                                         │
+│                         CONFIG LAYER                                      │
+│  benchmark/config/config_loader.py                                        │
 │   - load_combined_config(config.default.yaml, user_config)                │
 │   - deep_merge                                                            │
 │   - to_experiment_config -> ExperimentConfig + LlmConfig                  │
 │                                                                           │
-│  benchmark/config/config_utils.py                                          │
+│  benchmark/config/config_utils.py                                         │
 │   - load_api_key(provider): env var or YAML provider.api_key              │
 └───────────────┬───────────────────────────────────────────────────────────┘
                 │ resolves: domains_root, instance selection, model/provider
                 v
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                      DOMAIN REGISTRY / ADAPTERS                            │
-│  benchmark/domain_registry.py                                              │
+│                      DOMAIN REGISTRY / ADAPTERS                           │
+│  benchmark/domain_registry.py                                             │
 │   - get_adapter(domain)                                                   │
-│   - default_instance_dirs(domains_root) -> first instance found            │
+│   - default_instance_dirs(domains_root) -> first instance found           │
 │   - evaluator_factory() -> domain evaluator                               │
 └───────────────┬───────────────────────────────────────────────────────────┘
                 │ constructs one ExperimentRunner per (model, instance, run)
                 v
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                         EXPERIMENT RUNNER                                  │
-│  benchmark/runner/experiment_runner.py                                     │
+│                         EXPERIMENT RUNNER                                 │
+│  benchmark/runner/experiment_runner.py                                    │
 │  For each run:                                                            │
 │   1) prompt = PromptBuilder.build_prompt(domains_root, instance_dir)      │
 │   2) LLM: online call OR offline response-file OR prompt-only             │
-│   3) parse = PlanParser.parse(llm_raw)                                     │
+│   3) parse = PlanParser.parse(llm_raw)                                    │
 │   4) constraints_text = PlanParser.build_constraints(parse.actions)       │
 │   5) asp = ASPValidator.validate_plan(..., constraints_text)              │
 │   6) evaluation = Evaluator.evaluate(asp, parse, ...)                     │
 │   7) persist artifacts + copy support files                               │
 └───────────────┬───────────────────────────────────────────────────────────┘
                 │
-                ├───────────────┐
-                │               │
-                v               v
-┌───────────────────────┐   ┌───────────────────────────────────────────────┐
-│   PROMPT BUILDERS      │   │                  LLM CLIENTS                  │
-│ benchmark/prompt_builders │ │ benchmark/llm_clients/                        │
-│  - get_prompt_builder   │  │  - OpenAIClient / OpenRouterClient / Anthropic│
-│  - Domain + asp_version │  │  - generate(prompt)                            │
-└───────────────┬────────┘   └───────────────────────────────────────────────┘
                 │
                 v
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                 PLAN PARSERS / CONSTRAINT BUILDING                         │
-│ benchmark/llm_post_processing/plan_parser/                                 │
-│  - get_plan_parser(domain, domain_dir, instance_dir)                       │
-│  - <DomainPlanParser>.parse(raw_text) -> normalized actions                 │
-│  - <DomainPlanParser>.build_constraints(actions, maxstep) -> <domain>.lp   │
+│                 PLAN PARSERS / CONSTRAINT BUILDING                        │
+│ benchmark/llm_post_processing/plan_parser/                                │
+│  - get_plan_parser(domain, domain_dir, instance_dir)                      │
+│  - <DomainPlanParser>.parse(raw_text) -> normalized actions               │
+│  - <DomainPlanParser>.build_constraints(actions, maxstep) -> <domain>.lp  │
 │                                                                           │
-│ (Internally may use benchmark/llm_post_processing/constraint_builder/*)    │
+│ (Internally may use benchmark/llm_post_processing/constraint_builder/*)   │
 └───────────────┬───────────────────────────────────────────────────────────┘
                 v
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                        ASP VALIDATION (CLINGO)                             │
-│ benchmark/asp/validator.py                                                 │
-│  - Collect clingo input files:                                             │
-│     domain_constraints/*.lp + instance_constraints/*.lp + plan.lp          │
-│  - Run clingo (JSON output)                                                │
-│  - Parse satisfiable / witnesses / conflicts / nonexec                      │
+│                        ASP VALIDATION (CLINGO)                            │
+│ benchmark/asp/validator.py                                                │
+│  - Collect clingo input files:                                            │
+│     domain_constraints/*.lp + instance_constraints/*.lp + plan.lp         │
+│  - Run clingo (JSON output)                                               │
+│  - Parse satisfiable / witnesses / conflicts / nonexec                    │
 └───────────────┬───────────────────────────────────────────────────────────┘
                 v
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                           EVALUATION LAYER                                 │
-│ benchmark/evaluators/*                                                     │
-│  - Base metrics + domain-specific metrics                                  │
-│  - Consumes ASP outputs + parse outputs                                    │
+│                           EVALUATION LAYER                                │
+│ benchmark/evaluators/*                                                    │
+│  - Base metrics + domain-specific metrics                                 │
+│  - Consumes ASP outputs + parse outputs                                   │
 └───────────────┬───────────────────────────────────────────────────────────┘
                 v
 ┌───────────────────────────────────────────────────────────────────────────┐
-│                           OUTPUT / ARTIFACTS                               │
-│ benchmark/io/artifact_writer.py                                            │
-│  - Writes result.json, prompt.txt, llm_raw.txt, parse.json, asp.json       │
-│  - Writes clingo_stdout.txt / clingo_raw.json                              │
-│  - Writes <domain>_NarrPlan.lp                                             │
+│                           OUTPUT / ARTIFACTS                              │
+│ benchmark/io/artifact_writer.py                                           │
+│  - Writes result.json, prompt.txt, llm_raw.txt, parse.json, asp.json      │
+│  - Writes clingo_stdout.txt / clingo_raw.json                             │
+│  - Writes <domain>_NarrPlan.lp                                            │
 │                                                                           │
-│ benchmark/io/support_files_copier.py                                       │
-│  - Copies clingo input LPs into output:                                    │
-│     domain_constraints/ and instance_constraints/                          │
-│  - Copies response-file sibling txt files                                  │
-│  - Writes collect.json manifest (src -> dest mapping)                      │
+│ benchmark/io/support_files_copier.py                                      │
+│  - Copies clingo input LPs into output:                                   │
+│     domain_constraints/ and instance_constraints/                         │
+│  - Copies response-file sibling txt files                                 │
+│  - Writes collect.json manifest (src -> dest mapping)                     │
 └───────────────────────────────────────────────────────────────────────────┘
-2) Modes (behavior matrix)
+```
 
-┌─────────────────┬───────────────┬───────────────┬─────────────────────────┐
-│ Mode            │ LLM Call       │ Parse/Build   │ Clingo Validation       │
-├─────────────────┼───────────────┼───────────────┼─────────────────────────┤
-│ Online          │ Yes            │ Yes           │ Yes                     │
-│ Prompt-only     │ No             │ No (prompt only)│ No                    │
-│ Response-file   │ No (replay)    │ Yes           │ Yes                     │
-└─────────────────┴───────────────┴───────────────┴─────────────────────────┘
+```mermaid
+flowchart TD
+  %% Entry
+  CLI[CLI\nbenchmark/cli/run_benchmark.py\n(root shim: run_benchmark.py)] --> ARGS[Arg Parsing\nbenchmark/cli/args.py]
+  ARGS --> CFGLOAD[Config Load + Merge\nbenchmark/config/config_loader.py\nload_combined_config + deep_merge\n-> ExperimentConfig + LlmConfig]
+  CFGLOAD --> KEY[API Key Resolution\nbenchmark/config/config_utils.py\nload_api_key(provider)]
+
+  %% Domain + instance selection
+  CFGLOAD --> REG[Domain Registry\nbenchmark/domain_registry.py\nget_adapter(domain)]
+  ARGS --> SEL[Instance Selection\nCLI --instance/--instances\nor experiment.instances\nor response-file inference\nor default_instance_dirs()]
+
+  %% Runner
+  REG --> RUN[ExperimentRunner\nbenchmark/runner/experiment_runner.py]
+  SEL --> RUN
+  KEY --> RUN
+
+  %% Prompt
+  RUN --> PBGET[get_prompt_builder(domain, asp_version)\nbenchmark/prompt_builders/*]
+  PBGET --> PROMPT[PromptBuilder.build_prompt(domains_root, instance_dir)]
+
+  %% Modes
+  PROMPT --> MODE{Mode}
+  MODE -->|Online| LLMREQ[LLM Request\nbenchmark/llm_clients/*\nOpenAI / OpenRouter / Anthropic]
+  MODE -->|Response-file| RAW[Load llm_raw.txt\n(no API call)]
+  MODE -->|Prompt-only| ARTPO[Persist prompt-only marker\n+ copy support files]
+
+  LLMREQ --> RAWTEXT[LLM Raw Text]
+  RAW --> RAWTEXT
+
+  %% Parsing + constraints
+  RAWTEXT --> PPGET[get_plan_parser(domain, domain_dir, instance_dir)\nbenchmark/llm_post_processing/plan_parser/*]
+  PPGET --> PARSE[PlanParser.parse(raw)\n-> normalized actions\n+ valid sets]
+  PARSE --> BUILD[PlanParser.build_constraints(actions, maxstep)\n-> <domain>_NarrPlan.lp\n(uses constraint_builder/* as needed)]
+
+  %% ASP validation
+  BUILD --> VALID[ASPValidator\nbenchmark/asp/validator.py\nvalidate_plan(...)]
+  VALID --> COLLECT[Collect clingo inputs\n- domain_constraints/*.lp\n- instance_constraints/*.lp (+ *IHOP*.lp)\n- generated plan lp]
+  COLLECT --> CLINGO[Run clingo (JSON mode)\nparse SAT/UNSAT, witnesses,\nnonexec/conflict atoms]
+
+  %% Evaluation
+  CLINGO --> EVALGET[Evaluator Factory\nfrom Domain Registry\nbenchmark/evaluators/*]
+  EVALGET --> EVAL[Evaluator.evaluate(asp_result, parse_result, ...)\n-> evaluation.json]
+
+  %% Artifacts
+  PARSE --> WRITE[ArtifactWriter\nbenchmark/io/artifact_writer.py\nwrite result.json/prompt.txt/parse.json/...]
+  CLINGO --> WRITE
+  EVAL --> WRITE
+  BUILD --> WRITE
+
+  %% Support files / manifests
+  VALID --> COPY[SupportFilesCopier\nbenchmark/io/support_files_copier.py]
+  COPY --> OUT[Results Bundle\nresults/<run_id>/run_<seq>/...]
+  COPY --> MANIFEST[collect.json\n(src->dest manifest)]
+```
+
 
 ## Requirements
 
